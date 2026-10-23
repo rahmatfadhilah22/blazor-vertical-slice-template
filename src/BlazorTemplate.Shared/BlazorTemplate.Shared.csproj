@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PrivateAssets: jangan mengalir ke host WASM yang tidak punya runtime pack AspNetCore.App. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
+    <PackageReference Include="Radzen.Blazor" Version="12.*" />
+  </ItemGroup>
+
+</Project>

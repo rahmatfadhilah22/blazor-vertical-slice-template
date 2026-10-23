@@ -1,0 +1,49 @@
+<div class="rz-display-flex rz-gap-2 rz-align-items-center rz-mb-3">
+    @* Input native + @bind:after: bebas dari ketidakcocokan tipe event komponen.
+       rz-textbox = kelas CSS Radzen, jadi tampilannya tetap konsisten. *@
+    <input type="text" class="rz-textbox" placeholder="Cari nama atau deskripsi..."
+           aria-label="Cari kategori" @bind="_search" @bind:event="oninput" @bind:after="SearchInputChangedAsync"
+           style="width:280px" />
+    <Button Text="Tambah" Icon="add" Variant="ButtonVariant.Success" Click="@(() => OpenFormAsync(null))" />
+    <Button Text="@(_selected.Count == 0 ? "Hapus" : $"Hapus ({_selected.Count})")"
+            Icon="delete" Variant="ButtonVariant.Danger"
+            Disabled="@(_selected.Count == 0)" Click="@DeleteSelectedAsync" />
+</div>
+
+<RadzenDataGrid @ref="_grid" TItem="Category" Data="@_rows" Count="@_total"
+                LoadData="@LoadData" PageSize="@PageSize" AllowPaging
+                Style="width:100%">
+    <Columns>
+        <RadzenDataGridColumn TItem="Category" Title="" Width="48px" Sortable="false"
+                              Filterable="false" TextAlign="TextAlign.Center">
+            <Template Context="category">
+                <input type="checkbox" aria-label="@($"Pilih {category.CategoryName}")"
+                       checked="@_selected.Contains(category.CategoryID)"
+                       @onchange="@(e => Toggle(category.CategoryID, (bool)e.Value!))" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Category" Property="CategoryID" Title="ID" Width="70px" />
+        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="Nama" Width="220px" />
+        <RadzenDataGridColumn TItem="Category" Property="Description" Title="Deskripsi" />
+        <RadzenDataGridColumn TItem="Category" Context="category" Title="" Sortable="false"
+                              Filterable="false" Width="70px" TextAlign="TextAlign.Center">
+            <Template>
+                <Button Icon="edit" Size="ButtonSize.Small"
+                        Click="@(() => OpenFormAsync(category))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+
+    <EmptyTemplate>
+        @if (_error is not null)
+        {
+            <EmptyState Message="@_error" Icon="error_outline">
+                <Button Text="Coba lagi" Size="ButtonSize.Small" Click="@SearchAsync" />
+            </EmptyState>
+        }
+        else
+        {
+            <EmptyState Message="Belum ada data." Icon="inbox" />
+        }
+    </EmptyTemplate>
+</RadzenDataGrid>

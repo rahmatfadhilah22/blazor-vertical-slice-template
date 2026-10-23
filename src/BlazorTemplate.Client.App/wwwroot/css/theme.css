@@ -1,0 +1,73 @@
+/* Token warna aplikasi.
+ *
+ * Semua komponen memakai variabel --rz-* milik Radzen. File ini menimpanya sekali
+ * di satu tempat, jadi mengganti brand cukup mengubah blok PRIMARY di bawah.
+ *
+ * Selector `:root:root` sengaja dipakai, bukan `:root`: RadzenTheme menyuntikkan
+ * material.css (sumber palet asli) saat runtime, dan urutan stylesheet tidak bisa
+ * dijamin. Spesifisitas (0,2,0) menang tanpa bergantung urutan.
+ *
+ * Tiap warna semantik butuh 5 nilai karena Radzen memakai turunannya untuk hover,
+ * border, dan latar transparan. Kalau hanya --rz-primary yang diubah, hover dan
+ * badge masih memakai ungu bawaan.
+ */
+
+:root:root {
+    /* ===== BRAND ===== */
+    --rz-primary: #1565C0;
+    --rz-primary-light: #4285D9;
+    --rz-primary-lighter: rgba(21, 101, 192, 0.12);
+    --rz-primary-dark: #0F4C8F;
+    --rz-primary-darker: #0B3A6D;
+    --rz-on-primary: #ffffff;
+
+    --rz-secondary: #455A64;
+    --rz-secondary-light: #5C7280;
+    --rz-secondary-lighter: rgba(69, 90, 100, 0.12);
+    --rz-secondary-dark: #37474F;
+    --rz-secondary-darker: #263238;
+    --rz-on-secondary: #ffffff;
+
+    /* ===== STATUS (nilai bawaan Material, dipertahankan) ===== */
+    --rz-info: #2196F3;
+    --rz-info-light: #4DABF5;
+    --rz-info-lighter: rgba(33, 150, 243, 0.2);
+    --rz-info-dark: #1A78C2;
+    --rz-info-darker: #1666A5;
+    --rz-on-info: #ffffff;
+
+    --rz-success: #4CAF50;
+    --rz-success-light: #70BF73;
+    --rz-success-lighter: rgba(76, 175, 80, 0.16);
+    --rz-success-dark: #3D8C40;
+    --rz-success-darker: #347736;
+    --rz-on-success: #ffffff;
+
+    --rz-warning: #FF9800;
+    --rz-warning-light: #FFAD33;
+    --rz-warning-lighter: rgba(255, 152, 0, 0.2);
+    --rz-warning-dark: #CC7A00;
+    --rz-warning-darker: #AD6700;
+    --rz-on-warning: #ffffff;
+
+    --rz-danger: #F44336;
+    --rz-danger-light: #F6695E;
+    --rz-danger-lighter: rgba(244, 67, 54, 0.2);
+    --rz-danger-dark: #C3362B;
+    --rz-danger-darker: #A62E25;
+    --rz-on-danger: #ffffff;
+
+    /* ===== PERMUKAAN ===== */
+    /* Header memakai primary secara bawaan; ganti ke var(--rz-base-800)
+       kalau ingin navbar netral dan warna brand hanya di tombol. */
+    --rz-header-background-color: var(--rz-primary);
+    --rz-header-color: var(--rz-on-primary);
+    --rz-body-background-color: var(--rz-base-100);
+    --rz-sidebar-background-color: var(--rz-base-background-color);
+
+    --rz-text-color: var(--rz-base-800);
+    --rz-text-secondary-color: var(--rz-base-700);
+
+    /* ===== BENTUK ===== */
+    --rz-border-radius: 4px;
+}

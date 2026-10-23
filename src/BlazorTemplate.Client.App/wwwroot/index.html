@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>BlazorTemplate</title>
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <style>
+        /* Tanpa ini, blazor-error-ui selalu tampil karena tidak ada app.css bawaan template. */
+        #blazor-error-ui {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: .6rem 1.25rem;
+            background: var(--rz-danger-lighter);
+            color: var(--rz-text-color);
+            z-index: 1000;
+        }
+        #blazor-error-ui.dismissible { display: block; }
+    </style>
+</head>
+
+<body>
+    <div id="app">Memuat...</div>
+
+    <div id="blazor-error-ui">
+        Terjadi kesalahan tak terduga.
+        <a href="." class="reload">Muat ulang</a>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+</body>
+
+</html>

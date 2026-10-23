@@ -1,0 +1,15 @@
+@* Kondisi kosong / gagal muat. Slot ChildContent dipakai untuk tombol aksi (mis. "Coba lagi"). *@
+<div class="rz-display-flex rz-flex-column rz-align-items-center rz-gap-2 rz-p-6">
+    <RadzenIcon Icon="@Icon" Style="font-size:2.5rem;opacity:.4" />
+    <RadzenText TextStyle="TextStyle.Body1" Class="rz-text-secondary-color rz-mb-0">@Message</RadzenText>
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter] public string Message { get; set; } = "Belum ada data.";
+    [Parameter] public string Icon { get; set; } = "inbox";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

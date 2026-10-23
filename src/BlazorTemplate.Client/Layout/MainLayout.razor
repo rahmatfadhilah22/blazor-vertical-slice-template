@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+
+<RadzenTheme Theme="material" />
+<RadzenComponents />
+
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-py-2">
+            <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)" />
+            <RadzenText TextStyle="TextStyle.H6" Class="rz-mb-0">BlazorTemplate</RadzenText>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="_sidebarExpanded">
+        @* Padding atas disamakan dengan padding bawaan RadzenBody (1rem) agar menu sejajar dengan konten. *@
+        <div class="rz-pt-4">
+            <RadzenPanelMenu>
+                <RadzenPanelMenuItem Text="Master Data" Icon="folder" Expanded="true">
+                    <RadzenPanelMenuItem Text="Categories" Icon="category" Path="categories" />
+                </RadzenPanelMenuItem>
+            </RadzenPanelMenu>
+        </div>
+    </RadzenSidebar>
+
+    <RadzenBody>
+        @* RadzenBody sudah punya padding 1rem; jangan tambah wrapper ber-padding lagi. *@
+        @Body
+    </RadzenBody>
+</RadzenLayout>
+
+@code {
+    private bool _sidebarExpanded = true;
+}

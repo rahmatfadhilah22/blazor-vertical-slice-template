@@ -1,0 +1,10 @@
+@* Pesan error di bawah field. Radzen 12 tidak punya .rz-text-danger / .rz-text-sm;
+   yang benar .rz-color-danger + .rz-text-caption. *@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="rz-color-danger rz-text-caption">@Message</div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+}

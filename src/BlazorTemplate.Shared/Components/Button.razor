@@ -1,0 +1,59 @@
+@* Tombol standar aplikasi.
+ *
+ * Satu-satunya tempat yang tahu RadzenButton. Developer memakai <Button Variant="...">
+ * dan tidak perlu mengingat ButtonStyle/ButtonSeverity/Size/Variant/Shade.
+ *
+ * Sengaja TIDAK meneruskan semua parameter RadzenButton: hanya yang punya padanan
+ * makna di library lain (Text, Icon, Click, Disabled, Busy, Size). Yang tidak
+ * diteruskan (Image, TabIndex, IconColor, ChildContent) ditambahkan hanya bila
+ * benar-benar dipakai.
+ *@
+<RadzenButton Text="@Text"
+              Icon="@Icon"
+              ButtonStyle="@Style"
+              Size="@Size"
+              ButtonType="@ButtonType"
+              Disabled="@(Disabled || IsBusy)"
+              IsBusy="@IsBusy"
+              BusyText="@BusyText"
+              Click="@Click"
+              class="@Class" />
+
+@code {
+    /// <summary>Label tombol. Kosongkan untuk tombol ikon saja.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Nama ikon Material, mis. "add", "edit", "delete".</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+
+    [Parameter] public Radzen.ButtonSize Size { get; set; } = Radzen.ButtonSize.Medium;
+
+    [Parameter] public bool Disabled { get; set; }
+
+    [Parameter] public bool IsBusy { get; set; }
+
+    [Parameter] public string BusyText { get; set; } = "Menyimpan...";
+
+    [Parameter] public ButtonType ButtonType { get; set; } = ButtonType.Button;
+
+    [Parameter] public EventCallback<MouseEventArgs> Click { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    // ---- Pemetaan ke Radzen: ubah di sini, semua tombol ikut berubah ----
+
+    private ButtonStyle Style => Variant switch
+    {
+        ButtonVariant.Primary => ButtonStyle.Primary,
+        ButtonVariant.Secondary => ButtonStyle.Secondary,
+        ButtonVariant.Success => ButtonStyle.Success,
+        ButtonVariant.Danger => ButtonStyle.Danger,
+        ButtonVariant.Warning => ButtonStyle.Warning,
+        ButtonVariant.Info => ButtonStyle.Info,
+        ButtonVariant.Light => ButtonStyle.Light,
+        // Ghost: tidak ada padanan langsung di Radzen; Light adalah yang paling dekat.
+        _ => ButtonStyle.Light,
+    };
+}
