@@ -90,7 +90,7 @@ Satu tempat: `Api:BaseUrl` di `src/BlazorTemplate.Client.App/wwwroot/appsettings
 
 `WebAssemblyHostBuilder.CreateDefault` memuat file ini otomatis. `appsettings.Development.json` juga didukung dan menimpa nilainya saat environment Development. Kalau key tidak ada, aplikasi gagal start dengan pesan jelas — bukan diam-diam menembak ke URL salah.
 
-Trailing slash ditambahkan otomatis di `Program.cs`; `CategoryService` memakai path relatif (`Categories/...`), jadi base URL boleh dengan atau tanpa `/` di akhir. Jangan sertakan `/api` dua kali.
+Trailing slash ditambahkan otomatis di `Program.cs`; URL endpoint ditulis relatif (`Categories/...`) di komponen, jadi base URL boleh dengan atau tanpa `/` di akhir. Jangan sertakan `/api` dua kali.
 
 > File config di `wwwroot` ikut ter-bundle ke browser dan bisa dibaca siapa pun. Jangan taruh secret di sini. Untuk nilai rahasia, ambil dari API yang mengeluarkan token.
 
@@ -98,17 +98,22 @@ Trailing slash ditambahkan otomatis di `Program.cs`; `CategoryService` memakai p
 
 ```
 src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas Radzen
+  Components/Button.razor(+.cs)         wrapper RadzenButton + enum ButtonVariant
   Components/PageHeader.razor           judul halaman + slot aksi
   Components/EmptyState.razor           kondisi kosong / gagal muat
   Components/FieldError.razor           pesan error di bawah field
-  Components/Button.razor               satu-satunya tempat yang tahu RadzenButton
 src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Models/                               Category, PagedResult, CategoryInput
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
   Features/Categories/Pages/            CategoryListPage — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
-  Layout/MainLayout.razor               RadzenTheme + RadzenComponents
-src/BlazorTemplate.Client.App/       Blazor WASM host: Program.cs, LoggingHandler, wwwroot
+  Layout/MainLayout.razor               RadzenTheme (material) + RadzenComponents
+src/BlazorTemplate.Client.App/       Blazor WASM host
+  Program.cs                            registrasi service + HttpClient + base URL
+  LoggingHandler.cs                     log semua request/response ke console browser
+  wwwroot/index.html                    theme CSS + blazor boot
+  wwwroot/appsettings.json              Api:BaseUrl
+  wwwroot/css/theme.css                 warna terpusat (CSS variable Radzen)
 ```
 
 ### Aturan API
@@ -143,8 +148,6 @@ RCL memakai `FrameworkReference Microsoft.AspNetCore.App` dengan `PrivateAssets=
 
 ### Aturan komponen shared
 
-`BlazorTemplate.Shared` **hanya** berisi komponen yang sudah dipakai minimal dua tempat. Jangan membungkus `RadzenDataGrid`, `RadzenTextBox`, atau komponen Radzen lain yang punya banyak parameter — wrapper seperti itu harus meneruskan puluhan parameter dan berubah setiap upgrade Radzen. Pakai Radzen langsung; taruh hanya keputusan desain (spacing, tipografi, warna semantik) di shared.
-
 Kelas utilitas yang dipakai harus benar-benar ada di Radzen 12: `rz-color-danger`, `rz-text-caption`, `rz-text-secondary-color`, `rz-text-body2`, `rz-mb-*`, `rz-p-*`, `rz-display-flex`, `rz-gap-*`, `rz-align-items-*`, `rz-justify-content-*`. `rz-text-danger` dan `rz-text-sm` **tidak ada** (dulu sempat dipakai dan diam-diam tidak berwarna).
 
 ### Hapus massal
@@ -155,11 +158,53 @@ Tidak ada tombol hapus per baris. Kolom pertama grid berisi checkbox; pilihan di
 
 ### Pencarian
 
-Tidak ada tombol Cari. Input pencarian memicu request otomatis dengan **debounce 300ms** — satu request per jeda ketikan, bukan satu per huruf. Setiap request juga mengembalikan grid ke halaman 1 dan mengosongkan pilihan checkbox.
+Tidak ada tombol Cari. Input pencarian (native `<input>` dengan kelas `rz-textbox`) memicu request otomatis dengan **debounce 300ms** — satu request per jeda ketikan, bukan satu per huruf. Setiap request juga mengembalikan grid ke halaman 1 dan mengosongkan pilihan checkbox.
 
 - Pilihan dikosongkan setiap `LoadData` (ganti halaman / pencarian / reload), supaya tidak ada id terhapus yang sudah tidak terlihat di layar.
 - Tombol nonaktif saat tidak ada yang dipilih.
 - Backend bersifat semua-atau-tidak-sama-sekali: kalau satu id sudah hilang, 404 dan tidak ada yang terhapus. Daftar tidak di-reload saat gagal, jadi isi grid tetap utuh.
+
+### Debugging
+
+Semua request/response tercatat di **console browser** (F12), bukan terminal — aplikasi jalan di WASM, tidak ada server di belakangnya. Format: `--> GET url`, `<-- 200 url`, `<-- 500 url` + body error.
+
+Kalau halaman blank tanpa pesan: cek tab Console untuk 404 `_framework/*` atau kegagalan integrity check — itu tanda server jalan dengan asset build lama (lihat catatan restart di atas).
+
+## Tema dan warna
+
+Tema: **Material** (gratis), dipilih di `src/BlazorTemplate.Client/Layout/MainLayout.razor`:
+
+```razor
+<RadzenTheme Theme="material" />
+```
+
+Tema gratis lain di Radzen 12: `standard`, `default`, `humanistic`, `software`. Tema Material 3 / Fluent / Zen butuh **Radzen Blazor Pro** (berbayar) — tidak jalan dengan paket gratis.
+
+Warna terpusat di `src/BlazorTemplate.Client.App/wwwroot/css/theme.css`. Itu menimpa CSS variable Radzen, jadi semua komponen Radzen otomatis mengikuti:
+
+```css
+:root:root {
+  --rz-primary: #1565C0;        /* biru, dipakai header, tombol primary, dsb. */
+  --rz-secondary: #455A64;      /* biru abu-abu */
+  --rz-header-background-color: var(--rz-primary);
+  --rz-border-radius: 4px;
+}
+```
+
+Warna status (success/warning/danger/info) masih default Material. Spesifikasi `:root:root` (dobel) disengaja: `RadzenTheme` menyuntikkan stylesheet theme saat runtime, dan dobel menjamin override kita menang tanpa mempedulikan urutan.
+
+## Komponen shared
+
+`BlazorTemplate.Shared` berisi komponen dasar yang dipakai lintas fitur. Semua komponen punya code-behind (`.razor` markup + `.razor.cs` logika), kecuali yang hanya markup murni:
+
+| Komponen | Fungsi | Parameter utama |
+|---|---|---|
+| `Button` | satu-satunya tempat yang tahu `RadzenButton`; developer pakai `Variant` (`ButtonVariant.Primary/Secondary/Success/Danger/Warning/Info/Light/Ghost`), tidak perlu tahu `ButtonStyle`/`Severity` Radzen | `Text`, `Icon`, `Variant`, `Size`, `IsBusy` (otomatis disabled + busy text), `Click` |
+| `PageHeader` | judul halaman + slot aksi di kanan | `Title`, `Subtitle`, `Actions` (ChildContent) |
+| `EmptyState` | kondisi kosong / gagal muat, center | `Message`, `Icon`, `ChildContent` (mis. tombol "Coba lagi") |
+| `FieldError` | pesan error di bawah field form | `Message` |
+
+`BlazorTemplate.Shared` **hanya** berisi komponen yang sudah dipakai minimal dua tempat. Jangan membungkus `RadzenDataGrid`, `RadzenTextBox`, atau komponen Radzen lain yang punya banyak parameter — wrapper seperti itu harus meneruskan puluhan parameter dan berubah setiap upgrade Radzen. Pakai Radzen langsung; taruh hanya keputusan desain (spacing, tipografi, warna semantik) di shared.
 
 ## Gap v1
 
