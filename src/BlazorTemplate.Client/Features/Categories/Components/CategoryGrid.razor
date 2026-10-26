@@ -15,11 +15,10 @@
     </Toolbar>
 
     <ChildContent>  
-        <RadzenDataGridColumn TItem="Category" Property="CategoryID" Title="ID" Width="70px" />
-        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="Nama" Width="220px" />
-        <RadzenDataGridColumn TItem="Category" Property="Description" Title="Deskripsi" />
-        <RadzenDataGridColumn TItem="Category" Context="category" Title="" Sortable="false"
-                              Filterable="false" Width="70px" TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="Nama" Width="40%" />
+        <RadzenDataGridColumn TItem="Category" Property="Description" Title="Deskripsi" Width="50%" />
+        <RadzenDataGridColumn TItem="Category" Context="category" Title="Action" Sortable="false"
+                              Filterable="false" Width="10%" TextAlign="TextAlign.Center">
             <Template>
                 <Button Icon="edit" Size="ButtonSize.Small"
                         Click="@(() => OpenFormAsync(category))" />

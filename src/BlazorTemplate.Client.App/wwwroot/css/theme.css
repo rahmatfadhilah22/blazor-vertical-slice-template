@@ -69,5 +69,106 @@
     --rz-text-secondary-color: var(--rz-base-700);
 
     /* ===== BENTUK ===== */
-    --rz-border-radius: 4px;
+    /* 8px dipakai tombol, input, dialog, dan kartu sekaligus. */
+    --rz-border-radius: 8px;
+
+    /* Input: bawaan Material hanya garis bawah. Kotak ber-border lembut lebih mudah
+       dipindai matanya di form yang berdampingan (lihat CategoryFormDialog).
+       --rz-input-background-color sengaja tidak diubah: checkbox juga memakainya,
+       dan abu-abu muda membuat checkbox di header grid nyaris tak terlihat. */
+    --rz-input-border: 1px solid var(--rz-base-300);
+    --rz-input-border-block-end: 1px solid var(--rz-base-300);
+    /* Bawaan Material base-900: dengan border penuh, hover jadi garis hitam tebal. */
+    --rz-input-hover-border: 1px solid var(--rz-base-400);
+    /* Material memakai focus = border hilang + garis bawah; dengan border penuh,
+       hilangnya border saat fokus terlihat seperti input rusak. */
+    --rz-input-focus-border: 1px solid var(--rz-primary);
+
+    /* ===== GRID =====
+     * Tabel dibuat terbaca sebagai satu permukaan: tanpa garis vertikal, garis
+     * horizontal tipis, header abu muda dan huruf kecil. Bingkai kartu dipasang di
+     * .app-datagrid (lihat bawah), jadi chrome bawaan grid dimatikan di sini. */
+    --rz-grid-border: none;
+    --rz-grid-border-radius: 0;
+    --rz-grid-shadow: none;
+    --rz-grid-cell-border: none;
+    --rz-grid-right-cell-border: none;
+    --rz-grid-bottom-cell-border: 1px solid var(--rz-base-200);
+    --rz-grid-cell-padding: 0.75rem 1rem;
+    /* Header lebih gelap dan lebih tebal dari baris: abu base-100 (baris putih),
+       huruf 13px, dan pembatas base-300 (baris hanya base-200). */
+    --rz-grid-header-background-color: var(--rz-base-100);
+    /* th sendiri ber-padding 0 (aturan `.rz-grid-table thead th` Radzen lebih spesifik
+       dari aturan padding sel), jadi satu-satunya padding header datang dari div judul
+       di dalamnya. Sengaja lebih tinggi dari sel body (0.75rem) supaya header terbaca
+       sebagai pita, bukan baris data. */
+    --rz-grid-header-cell-padding: 0.875rem 1rem;
+    --rz-grid-header-cell-border-bottom: 2px solid var(--rz-base-300);
+    --rz-grid-header-cell-border: none;
+    --rz-grid-header-color: var(--rz-base-700);
+    --rz-grid-header-font-size: 0.8125rem;
+    --rz-grid-header-font-weight: 600;
+    --rz-grid-header-line-height: 1.25rem;
+    --rz-grid-header-text-transform: uppercase;
+    --rz-grid-selected-background-color: var(--rz-primary-lighter);
+    --rz-grid-data-border-shadow: none;
+
+    /* Checkbox: sedikit lebih besar dan membulat supaya tidak terlihat seperti kotak kecil. */
+    --rz-checkbox-width: 1.25rem;
+    --rz-checkbox-height: 1.25rem;
+    --rz-checkbox-border-radius: 6px;
+    --rz-checkbox-border-width: 1.5px;
+
+    --rz-pager-padding: 0.625rem 1rem;
+    --rz-pager-summary-font-size: 0.75rem;
+    --rz-pager-border: 1px solid var(--rz-base-200);
+}
+
+/* ===== Bingkai DataGrid =====
+ * Satu permukaan untuk toolbar + tabel + pager. Kelas .app-datagrid dipasang oleh
+ * komponen DataGrid di BlazorTemplate.Shared; pindahkan blok ini ke stylesheet host
+ * lain (MAUI) kalau host-nya tidak memuat theme.css.
+ */
+.app-datagrid {
+    overflow: hidden;
+    border: 1px solid var(--rz-base-200);
+    border-radius: 12px;
+    background-color: var(--rz-base-background-color);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 14px 32px -22px rgba(16, 24, 40, 0.45);
+}
+
+.app-datagrid-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--rz-base-200);
+}
+
+.app-datagrid .app-datagrid-search {
+    width: 280px;
+    margin-inline-start: auto;
+    padding-inline-start: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239e9e9e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E");
+    background-position: 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+}
+
+.app-datagrid .rz-grid-table thead th {
+    letter-spacing: 0.04em;
+}
+
+/* Baris terpilih ikut berwarna. Grid memakai checkbox sendiri (bukan fitur selection
+   Radzen), jadi tidak ada .rz-state-highlight yang bisa diandalkan. */
+.app-datagrid .rz-grid-table tbody tr:has(.rz-chkbox-box.rz-state-active) > td {
+    background-color: var(--rz-grid-selected-background-color);
+}
+
+@media (max-width: 640px) {
+    .app-datagrid .app-datagrid-search {
+        width: 100%;
+        margin-inline-start: 0;
+    }
 }

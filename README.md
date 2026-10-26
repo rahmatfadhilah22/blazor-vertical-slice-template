@@ -248,11 +248,24 @@ Warna terpusat di `src/BlazorTemplate.Client.App/wwwroot/css/theme.css`. Itu men
   --rz-primary: #1565C0;        /* biru, dipakai header, tombol primary, dsb. */
   --rz-secondary: #455A64;      /* biru abu-abu */
   --rz-header-background-color: var(--rz-primary);
-  --rz-border-radius: 4px;
+  --rz-border-radius: 8px;      /* tombol, input, dialog, kartu */
 }
 ```
 
 Warna status (success/warning/danger/info) masih default Material. Spesifikasi `:root:root` (dobel) disengaja: `RadzenTheme` menyuntikkan stylesheet theme saat runtime, dan dobel menjamin override kita menang tanpa mempedulikan urutan.
+
+### Tampilan DataGrid
+
+Grid tidak tampil sebagai tabel berbingkai penuh. Chrome bawaannya dimatikan lewat variable (`--rz-grid-border`, garis vertikal, shadow), lalu toolbar + tabel + pager dibungkus satu kartu `.app-datagrid` (border 1px, radius 12px, shadow tipis). Kelas itu dipasang oleh komponen `DataGrid` sendiri, jadi pemakai tidak menulis apa pun.
+
+Yang perlu diingat saat mengubah tampilan:
+
+- Garis antar baris `1px var(--rz-base-200)`; header abu (`--rz-base-50`), huruf 11px kapital abu-abu. Header ber-padding 0.75rem, sama dengan sel body, jadi judul kolom lurus dengan isinya.
+- Baris terpilih diberi latar `--rz-primary-lighter`, dan kolom checkbox 56px supaya checkbox 20px tetap punya ruang.
+- Input pencarian memakai ikon kaca pembesar SVG inline (data URI), bukan file gambar — tidak ada request tambahan.
+- Input (termasuk form dialog) diubah dari garis-bawah Material ke kotak ber-border; saat fokus border tetap ada, hanya berubah jadi primary (`--rz-input-focus-border`), karena aturan fokus Material menghapus border.
+
+`theme.css` hanya dimuat host WASM. Kalau host lain (MAUI) ditambahkan, blok `.app-datagrid` dan variable di atas harus ikut dimuat di host itu — komponen di `BlazorTemplate.Shared` tidak membawa CSS sendiri.
 
 ## Komponen shared
 

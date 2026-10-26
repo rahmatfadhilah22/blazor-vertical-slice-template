@@ -14,17 +14,19 @@
 @typeparam TItem where TItem : notnull
 @inherits BaseComponent
 
+@* Satu kartu untuk toolbar + tabel + pager, bukan tiga blok terpisah yang mengambang. *@
+<div class="app-datagrid">
 @if (Toolbar is not null || AllowSearch)
 {
-    <div class="rz-display-flex rz-gap-2 rz-align-items-center rz-mb-3">
+    <div class="app-datagrid-toolbar">
         @Toolbar
         @if (AllowSearch)
         {
             @* Input native + @bind:after: bebas dari ketidakcocokan tipe event komponen.
                rz-textbox = kelas CSS Radzen, jadi tampilannya tetap konsisten. *@
-            <input type="text" class="rz-textbox" placeholder="@SearchPlaceholder"
+            <input type="text" class="rz-textbox app-datagrid-search" placeholder="@SearchPlaceholder"
                    aria-label="@SearchPlaceholder" @bind="_search" @bind:event="oninput"
-                   @bind:after="SearchChangedAsync" style="width:280px;margin-left:auto" />
+                   @bind:after="SearchChangedAsync" />
         }
     </div>
 }
@@ -39,7 +41,8 @@
     <Columns>
         @if (AllowSelection)
         {
-            <RadzenDataGridColumn TItem="TItem" Width="48px" Sortable="false" Filterable="false"
+            @* 56px: 1.25rem checkbox + padding sel 1rem kiri-kanan. *@
+            <RadzenDataGridColumn TItem="TItem" Width="56px" Sortable="false" Filterable="false"
                                   TextAlign="TextAlign.Center">
                 <HeaderTemplate>
                     @* TriState=false + nilai bool?: klik hanya true/false, tapi null tetap
@@ -82,3 +85,4 @@
         </div>
     </LoadingTemplate>
 </RadzenDataGrid>
+</div>
