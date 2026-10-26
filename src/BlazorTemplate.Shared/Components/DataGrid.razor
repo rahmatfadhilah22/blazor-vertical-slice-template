@@ -1,0 +1,84 @@
+@* Grid server-side standar aplikasi.
+ *
+ * Pemakai hanya menyuplai LoadData (lambda ke API) + kolom. Grid yang memegang baris,
+ * total, halaman, ukuran halaman, kata kunci pencarian, indikator loading, pilihan baris,
+ * dan pesan error.
+ *
+ * Hanya parameter inti yang diteruskan: PageSize, LoadData, kolom, EmptyTemplate, Toolbar,
+ * AllowSelection, AllowSearch. Parameter Radzen lain (sort server-side, filter, grouping,
+ * export) ditambahkan ke sini HANYA saat ada fitur yang memakainya — jangan meneruskan semua.
+ *
+ * Kolom tetap ditulis di pemakai sebagai <RadzenDataGridColumn TItem="...">, supaya
+ * template per kolom tidak perlu di-cast dan upgrade Radzen tidak menyentuh pemakai.
+ *@
+@typeparam TItem where TItem : notnull
+@inherits BaseComponent
+
+@if (Toolbar is not null || AllowSearch)
+{
+    <div class="rz-display-flex rz-gap-2 rz-align-items-center rz-mb-3">
+        @Toolbar
+        @if (AllowSearch)
+        {
+            @* Input native + @bind:after: bebas dari ketidakcocokan tipe event komponen.
+               rz-textbox = kelas CSS Radzen, jadi tampilannya tetap konsisten. *@
+            <input type="text" class="rz-textbox" placeholder="@SearchPlaceholder"
+                   aria-label="@SearchPlaceholder" @bind="_search" @bind:event="oninput"
+                   @bind:after="SearchChangedAsync" style="width:280px;margin-left:auto" />
+        }
+    </div>
+}
+
+@* Pager dibuat satu grup di tengah: default theme menyebar ringkasan ke kiri dan
+   tombol halaman ke kanan, sehingga mata harus bolak-balik. *@
+<RadzenDataGrid @ref="_grid" TItem="TItem" Data="@_rows" Count="@_count"
+                LoadData="LoadDataInternal" AllowPaging IsLoading="_isLoading"
+                @bind-PageSize="_pageSize" PageSizeOptions="@PageSizeOptions"
+                PagerHorizontalAlign="HorizontalAlign.Center"
+                Style="width:100%">
+    <Columns>
+        @if (AllowSelection)
+        {
+            <RadzenDataGridColumn TItem="TItem" Width="48px" Sortable="false" Filterable="false"
+                                  TextAlign="TextAlign.Center">
+                <HeaderTemplate>
+                    @* TriState=false + nilai bool?: klik hanya true/false, tapi null tetap
+                       tampil sebagai garis (sebagian terpilih). TriState=true akan memutar
+                       false → null → true, jadi klik pertama malah jadi "sebagian". *@
+                    <RadzenCheckBox TriState="false" TValue="bool?" Value="@SelectAllState"
+                                    Change="@(value => SelectAll(value == true))"
+                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", "Pilih semua di halaman ini" } })" />
+                </HeaderTemplate>
+                <Template Context="item">
+                    <RadzenCheckBox TValue="bool" Value="@_selected.Contains(item)"
+                                    Change="@(value => Toggle(item, value))"
+                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", "Pilih baris" } })" />
+                </Template>
+            </RadzenDataGridColumn>
+        }
+        @ChildContent
+    </Columns>
+    @* Harus selalu ada (Radzen menolak child content kondisional di level atas).
+       Pesan error dan kondisi kosong ditangani di sini, bukan oleh pemakai. *@
+    <EmptyTemplate>
+        @if (_error is not null)
+        {
+            <EmptyState Message="@_error" Icon="error_outline">
+                <Button Text="Coba lagi" Size="ButtonSize.Small" Click="@(() => ReloadAsync())" />
+            </EmptyState>
+        }
+        else if (EmptyTemplate is not null)
+        {
+            @EmptyTemplate
+        }
+        else
+        {
+            <EmptyState Message="Belum ada data." Icon="inbox" />
+        }
+    </EmptyTemplate>
+    <LoadingTemplate>
+        <div class="rz-display-flex rz-justify-content-center rz-p-6">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        </div>
+    </LoadingTemplate>
+</RadzenDataGrid>

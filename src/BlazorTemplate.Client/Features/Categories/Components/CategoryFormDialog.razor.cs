@@ -1,16 +1,16 @@
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
+using BlazorTemplate.Shared.Components;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 
 namespace BlazorTemplate.Client.Features.Categories.Components;
 
-public partial class CategoryFormDialog
+public partial class CategoryFormDialog : BaseComponent
 {
     [Parameter] public Category? Category { get; set; }
 
     [Inject] public ApiClient Api { get; set; } = default!;
-    [Inject] public DialogService DialogService { get; set; } = default!;
 
     private readonly CategoryInput _input = new();
     private readonly Dictionary<string, string> _errors = [];

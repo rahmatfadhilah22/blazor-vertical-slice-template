@@ -59,7 +59,7 @@ Base URL: `http://localhost:5207`
 
 | Method | Path | Request | Success |
 |---|---|---|---|
-| GET | `/api/Categories/GetRows?page=1&pageSize=10&search=tea` | — | 200 PagedResult |
+| GET | `/api/Categories/GetRows?page=1&pageSize=10&search=tea` | — | 200 `PagedResult<Category>` |
 | GET | `/api/Categories/GetRow/{id}` | — | 200 Category, 404 jika tidak ada |
 | POST | `/api/Categories/Insert` | CategoryInput (JSON) | 201 Category |
 | PUT | `/api/Categories/Update/{id}` | CategoryInput (JSON) | 204, 404 jika tidak ada |
@@ -99,9 +99,12 @@ Trailing slash ditambahkan otomatis di `Program.cs`; URL endpoint ditulis relati
 ```
 src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas Radzen
   Components/Button.razor(+.cs)         wrapper RadzenButton + enum ButtonVariant
+  Components/BaseComponent.cs           base class: DialogService + NotificationService
   Components/PageHeader.razor           judul halaman + slot aksi
   Components/EmptyState.razor           kondisi kosong / gagal muat
   Components/FieldError.razor           pesan error di bawah field
+  Components/DataGrid.razor(+.cs)       grid server-side (parameter inti saja)
+  Components/DataGridLoadArgs.cs        DataGridLoadArgs (Page/PageSize/Search) + DataGridPage (Items/Total)
 src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Models/                               Category, PagedResult, CategoryInput
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
@@ -120,10 +123,18 @@ src/BlazorTemplate.Client.App/       Blazor WASM host
 
 `ApiClient` adalah satu-satunya yang menyentuh `HttpClient`. Method-nya selalu: mengembalikan body bertipe pada sukses, atau melempar `ApiException` (HTTP error, body bukan JSON, body kosong, backend tak terjangkau, timeout). Pemanggil hanya menangani satu jenis exception — `ApiException.Errors` berisi error per field dari 400, `Message` berisi `title` ProblemDetails.
 
-URL endpoint ditulis langsung di komponen pemakainya:
+Endpoint berpaging punya method khusus; path-nya tetap argumen karena nama action backend bisa berbeda-beda:
 
 ```csharp
-var result = await Api.GetAsync<PagedResult>($"Categories/GetRows?page={page}&pageSize={PageSize}");
+var result = await Api.GetPagedAsync<Category>("Categories/GetRows", page, pageSize, search);
+```
+
+Isinya `GetAsync<PagedResult<T>>(path, new { page, pageSize, search })`. Overload `GetAsync<T>(url, query)` menurunkan query string dari object (camelCase, nilai null dilewati, di-escape otomatis) — dipakai kalau nanti ada endpoint GET berparameter lain. `search` null/kosong/spasi dinormalkan di dalam `GetPagedAsync`, jadi pemanggil tidak perlu mengeceknya.
+
+Endpoint lain ditulis langsung di komponen pemakainya:
+
+```csharp
+await Api.DeleteAsync("Categories/Delete", ids);
 ```
 
 Tidak ada kelas per-fitur di atas `ApiClient`. Satu endpoint dipakai di satu tempat; lapisan tambahan hanya menambah file yang harus dibuka saat menelusuri bug, tanpa menghapus duplikasi. Pisahkan jadi service hanya kalau satu endpoint benar-benar dipanggil dari dua komponen atau butuh logika bersama (retry, cache, gabungan beberapa call).
@@ -138,13 +149,36 @@ Page **hanya** menyusun komposisi — tidak ada `RadzenDataGrid`, `DialogService
 <CategoryGrid />
 ```
 
-Komponen memakai code-behind (`X.razor` + `X.razor.cs`). Markup di `.razor`, semua state dan method di `.razor.cs` dengan `public partial class X`. Jangan pakai `@inject` di `.razor` untuk service yang juga ada di code-behind — akan bentrok `CS0102`. Inject di code-behind saja:
+Komponen memakai code-behind (`X.razor` + `X.razor.cs`). Markup di `.razor`, semua state dan method di `.razor.cs` dengan `public partial class X : BaseComponent`. Jangan pakai `@inject` di `.razor` untuk service yang juga ada di code-behind — akan bentrok `CS0102`. Inject di code-behind saja:
 
 ```csharp
-[Inject] public DialogService DialogService { get; set; } = default!;
+[Inject] public ApiClient Api { get; set; } = default!;
 ```
 
+`DialogService` dan `NotificationService` sudah tersedia dari `BaseComponent`; jangan di-inject ulang. Base class juga harus ditulis di markup (`@inherits BaseComponent`) karena `.razor` dan `.razor.cs` adalah dua partial declaration yang wajib sepakat soal base class.
+
 RCL memakai `FrameworkReference Microsoft.AspNetCore.App` dengan `PrivateAssets="all"` agar host WASM (yang tidak punya runtime pack AspNetCore) tetap bisa me-referensikannya.
+
+### Aturan form: modal atau halaman
+
+Batasnya ikut jenis data, bukan jumlah field.
+
+| Jenis | Bentuk form | Contoh |
+|---|---|---|
+| Master / konfigurasi | **modal** (`DialogService.OpenAsync`) | Category, Customer, Supplier, Satuan, Gudang |
+| Transaksi / dokumen | **halaman ber-route** (`/sales/{id}`) | Sales Order, Purchase Order, Invoice, Stock Opname |
+
+Alasan memilih modal untuk master: setelah simpan pengguna kembali ke grid dengan filter dan halaman yang sama, lalu lanjut input baris berikutnya. Halaman terpisah memaksa kembali ke halaman 1 setiap kali.
+
+Alasan memilih halaman untuk transaksi:
+
+- Dokumen harus bisa di-link dan di-bookmark ("invoice #123 ada yang salah") — modal tidak punya URL.
+- Refresh saat input 20 baris tidak boleh menghapus semuanya; halaman bisa restore/autosave.
+- Print dan lampiran butuh halaman penuh, bukan overlay.
+
+Pola dokumen: daftar → klik baris → `/sales/{id}`. Setelah simpan **tetap di halaman itu** (bukan kembali ke daftar), karena setelah header biasanya langsung isi item.
+
+Konsekuensi: `CategoryFormDialog` tetap modal. Jangan menambah parameter "buka halaman" ke `DataGrid` — form halaman adalah komponen + route tersendiri.
 
 ### Aturan komponen shared
 
@@ -152,17 +186,44 @@ Kelas utilitas yang dipakai harus benar-benar ada di Radzen 12: `rz-color-danger
 
 ### Hapus massal
 
-Tidak ada tombol hapus per baris. Kolom pertama grid berisi checkbox; pilihan disimpan sebagai `HashSet<int>` berisi `CategoryID`, lalu satu tombol **Hapus (n)** di toolbar mengirim semuanya dalam satu request DELETE dengan body `[1,2]`.
+Tidak ada tombol hapus per baris. `AllowSelection` menambahkan kolom checkbox (dengan checkbox pilih-semua di header); pilihan disimpan `DataGrid` sebagai `HashSet<TItem>` dan dibaca pemakai lewat `_grid.SelectedItems`, lalu dikirim dalam satu request DELETE dengan body `[1,2]`.
+
+- Checkbox header memakai `TriState="false"` dengan nilai `bool?`: tercentang = semua baris halaman terpilih, garis = sebagian, kosong = tidak ada. Nilai `null` hanya ditampilkan, bukan bagian siklus klik — `TriState="true"` akan membuat klik pertama menghasilkan "sebagian".
+- Pilih-semua hanya menjangkau baris yang sedang tampil di halaman, bukan seluruh database. Memilih seluruh hasil filter butuh parameter tambahan — belum ada.
+- Pilihan dikosongkan setiap `LoadData`, dan pemakai dapat `SelectionChanged` untuk me-render ulang toolbar (label "Hapus (n)").
 
 > Catatan: spesifikasi awal menyebut query string (`?ids=1&ids=2`), tapi backend aslinya menolak dengan 415 kalau body JSON tidak ada — `ids` dibaca dari body (dipastikan dengan probe curl).
 
 ### Pencarian
 
-Tidak ada tombol Cari. Input pencarian (native `<input>` dengan kelas `rz-textbox`) memicu request otomatis dengan **debounce 300ms** — satu request per jeda ketikan, bukan satu per huruf. Setiap request juga mengembalikan grid ke halaman 1 dan mengosongkan pilihan checkbox.
+Tidak ada tombol Cari. Kotak pencarian milik `DataGrid` (`AllowSearch`), memicu request otomatis dengan **debounce 300ms** — satu request per jeda ketikan, bukan satu per huruf. Setiap request juga mengembalikan grid ke halaman 1.
 
-- Pilihan dikosongkan setiap `LoadData` (ganti halaman / pencarian / reload), supaya tidak ada id terhapus yang sudah tidak terlihat di layar.
+- Pilihan checkbox dikosongkan setiap `LoadData` (grid melakukannya sendiri), supaya tidak ada id terhapus yang sudah tidak terlihat di layar.
 - Tombol nonaktif saat tidak ada yang dipilih.
 - Backend bersifat semua-atau-tidak-sama-sekali: kalau satu id sudah hilang, 404 dan tidak ada yang terhapus. Daftar tidak di-reload saat gagal, jadi isi grid tetap utuh.
+- Selama request berjalan, pager menampilkan spinner (`IsLoading`), bukan grid kosong yang terlihat seperti data hilang.
+
+### Aturan DataGrid
+
+Pemakai **tidak** memegang `_rows`, `_total`, `_error`, `_search`, atau `PageSize` — semua itu milik `DataGrid`. Yang ditulis pemakai hanya lambda ke API:
+
+```csharp
+private async Task<DataGridPage<Category>> LoadAsync(DataGridLoadArgs args)
+{
+    var result = await Api.GetPagedAsync<Category>("Categories/GetRows",
+        args.Page, args.PageSize, args.Search);
+
+    return new DataGridPage<Category>(result.Items, result.Total);
+}
+```
+
+- `LoadData` mengembalikan `DataGridPage<T>(items, total)` — total langsung, tidak ada method yang harus dipanggil. `total` null = semua baris sudah dimuat (client-side).
+- `PageSize` default 10 dan **bisa diubah pengguna lewat pager** (`PageSizeOptions` default `10, 25, 50, 100`). Jangan tulis `PageSize` di markup; kalau perlu beda, set parameter itu saja — nilai dinamisnya diteruskan ke `args.PageSize` setiap load.
+- `IsLoading` diurus grid: spinner tampil selama request, hilang setelah selesai (termasuk saat error).
+- Seleksi: set `AllowSelection`, baca `_grid.SelectedItems`, dan bind `SelectionChanged="StateHasChanged"` agar toolbar ikut berubah.
+- Error tidak perlu ditangani pemakai: `DataGrid` menangkap exception, menampilkan `EmptyState` + tombol "Coba lagi", dan mengirim notifikasi. Jangan `try/catch` di lambda `LoadData`.
+- Setelah simpan/hapus, panggil `grid.ReloadAsync(firstPage: true)` pada `@ref` grid.
+- Slot `Toolbar` untuk tombol aksi di atas grid; `EmptyTemplate` hanya bila pesan kosongnya bukan default.
 
 ### Debugging
 
@@ -203,8 +264,11 @@ Warna status (success/warning/danger/info) masih default Material. Spesifikasi `
 | `PageHeader` | judul halaman + slot aksi di kanan | `Title`, `Subtitle`, `Actions` (ChildContent) |
 | `EmptyState` | kondisi kosong / gagal muat, center | `Message`, `Icon`, `ChildContent` (mis. tombol "Coba lagi") |
 | `FieldError` | pesan error di bawah field form | `Message` |
+| `DataGrid<TItem>` | grid server-side: pemakai hanya menyuplai `LoadData` + kolom; baris, total, halaman, ukuran halaman, pencarian, loading, pilihan baris, dan error diurus grid | `LoadData` (lambda → `DataGridPage<T>`), `PageSize`, `PageSizeOptions`, `AllowSearch`, `SearchPlaceholder`, `AllowSelection`, `SelectionChanged`, `Toolbar`, `EmptyTemplate`; `SelectedItems`, `SelectedCount`, `ReloadAsync(firstPage)` |
 
-`BlazorTemplate.Shared` **hanya** berisi komponen yang sudah dipakai minimal dua tempat. Jangan membungkus `RadzenDataGrid`, `RadzenTextBox`, atau komponen Radzen lain yang punya banyak parameter — wrapper seperti itu harus meneruskan puluhan parameter dan berubah setiap upgrade Radzen. Pakai Radzen langsung; taruh hanya keputusan desain (spacing, tipografi, warna semantik) di shared.
+`BlazorTemplate.Shared` **hanya** berisi komponen yang sudah dipakai minimal dua tempat, **kecuali** `DataGrid`. Grid dibungkus bukan untuk menyembunyikan Radzen, melainkan supaya pemakaian grid selalu server-side dan seragam.
+
+Wrapper `DataGrid` hanya meneruskan parameter inti (`LoadData`, `PageSize`, kolom, `EmptyTemplate`, `Toolbar`, pencarian). Kolom tetap ditulis pemakai sebagai `<RadzenDataGridColumn TItem="...">` di dalam `<ChildContent>`, jadi template per kolom tidak perlu di-cast. Parameter Radzen lain (sort server-side, filter, selection, grouping, export) **tidak** diteruskan; tambahkan satu per satu ke `DataGrid` saat benar-benar ada fitur yang memakainya. Jangan pernah menyalin semua parameter `RadzenDataGrid`.
 
 ## Gap v1
 

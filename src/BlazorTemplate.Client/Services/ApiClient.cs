@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using BlazorTemplate.Client.Models;
 
 namespace BlazorTemplate.Client.Services;
 
@@ -13,8 +14,43 @@ public class ApiClient(HttpClient http)
 {
     public async Task<T> GetAsync<T>(string url)
     {
-        using var response = await SendAsync(() => http.GetAsync(url));
+        return await GetAsync<T>(url, query: null);
+    }
+
+    /// <summary>
+    /// GET dengan query string dari object (properti PascalCase → camelCase, null dilewati).
+    /// Nilai di-escape otomatis, jadi pemanggil tidak menulis <see cref="Uri.EscapeDataString"/>.
+    /// </summary>
+    public async Task<T> GetAsync<T>(string url, object? query)
+    {
+        using var response = await SendAsync(() => http.GetAsync(WithQuery(url, query)));
         return await ReadJsonAsync<T>(response);
+    }
+
+    /// <summary>
+    /// GET endpoint berpaging: <paramref name="path"/> adalah path lengkap
+    /// (mis. "Categories/GetRows"), karena nama action tiap backend bisa berbeda.
+    /// <paramref name="search"/> kosong/spasi tidak dikirim, jadi pemanggil tidak perlu menormalkan.
+    /// </summary>
+    public Task<PagedResult<T>> GetPagedAsync<T>(string path, int page, int pageSize, string? search = null)
+        => GetAsync<PagedResult<T>>(path, new
+        {
+            page,
+            pageSize,
+            search = string.IsNullOrWhiteSpace(search) ? null : search,
+        });
+
+    private static string WithQuery(string url, object? query)
+    {
+        if (query is null)
+            return url;
+
+        var pairs = query.GetType().GetProperties()
+            .Select(p => (p.Name, Value: p.GetValue(query)))
+            .Where(p => p.Value is not null)
+            .Select(p => $"{char.ToLowerInvariant(p.Name[0])}{p.Name[1..]}={Uri.EscapeDataString(p.Value!.ToString()!)}");
+
+        return $"{url}?{string.Join("&", pairs)}";
     }
 
     public async Task<T> PostAsync<T>(string url, object body)
