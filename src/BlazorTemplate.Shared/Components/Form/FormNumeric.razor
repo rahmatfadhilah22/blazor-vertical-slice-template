@@ -1,0 +1,15 @@
+@namespace BlazorTemplate.Shared.Components
+@typeparam TNumber
+@inherits FormInputBase<TNumber>
+@* Input angka berlabel + error + validator wajib. TNumber = tipe nilainya, mis. decimal / int. *@
+<FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
+    <RadzenNumeric TValue="TNumber" Name="@FieldName" @bind-Value="Value" Disabled="@Disabled" />
+    @if (Required)
+    {
+        <RadzenRequiredValidator Component="@FieldName" Text="@L.Format("common.required", Label)" />
+    }
+</FormField>
+
+@code {
+    [Parameter] public bool Required { get; set; }
+}

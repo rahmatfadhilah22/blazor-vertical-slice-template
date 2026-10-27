@@ -6,8 +6,8 @@
                  @bind-Value="_model.CategoryName"
                  Error="@ErrorFor("CategoryName")" />
 
-    <FormField Label="@L["category.description"]" Error="@ErrorFor("Description")" FullWidth>
-        <RadzenTextArea Name="Description" @bind-Value="_model.Description" Rows="3"
-                        Placeholder="@L["common.optional"]" />
-    </FormField>
+    <FormTextArea Label="@L["category.description"]" Name="Description" FullWidth Rows="3"
+                  Placeholder="@L["common.optional"]"
+                  @bind-Value="_model.Description"
+                  Error="@ErrorFor("Description")" />
 </FormDialog>
