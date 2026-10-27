@@ -1,9 +1,9 @@
-@namespace BlazorTemplate.Shared.Components
-@* Pesan error di bawah field. Radzen 12 tidak punya .rz-text-danger / .rz-text-sm;
+@* Pesan error di bawah field. role="alert" supaya screen reader mengumumkannya saat
+   muncul setelah submit; CSS: Radzen 12 tidak punya .rz-text-danger / .rz-text-sm,
    yang benar .rz-color-danger + .rz-text-caption. *@
 @if (!string.IsNullOrWhiteSpace(Message))
 {
-    <div class="rz-color-danger rz-text-caption">@Message</div>
+    <div class="rz-color-danger rz-text-caption" role="alert">@Message</div>
 }
 
 @code {

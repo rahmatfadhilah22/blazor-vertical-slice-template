@@ -1,6 +1,7 @@
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
+using BlazorTemplate.Shared.Components.Form;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 
@@ -45,9 +46,6 @@ public partial class CategoryFormDialog : BaseComponent
                 await Api.PostAsync<Category>("Categories/Insert", model);
             else
                 await Api.PutAsync($"Categories/Update/{model.CategoryID}", model);
-#if DEBUG
-            await Task.Delay(5000);
-#endif
             DialogService.Close(true);
         }
         catch (ApiException ex)

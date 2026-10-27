@@ -1,0 +1,6 @@
+@inherits BaseComponent
+<FormDialog TItem="Region" Data="_model" Columns="1" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.regionDescription"]" Name="RegionDescription" Required MaxLength="50"
+                 @bind-Value="_model.RegionDescription" Error="@ErrorFor("RegionDescription")" />
+</FormDialog>

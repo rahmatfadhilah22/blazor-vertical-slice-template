@@ -1,0 +1,9 @@
+@inherits BaseComponent
+<FormDialog TItem="CustomerDemographic" Data="_model" Columns="1" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.customerTypeID"]" Name="CustomerTypeID" Required MaxLength="10"
+                 Disabled="@(Demographic is not null)"
+                 @bind-Value="_model.CustomerTypeID" Error="@ErrorFor("CustomerTypeID")" />
+    <FormTextArea Label="@L["field.customerDesc"]" Name="CustomerDesc" Rows="3" MaxLength="100"
+                  @bind-Value="_model.CustomerDesc" Error="@ErrorFor("CustomerDesc")" />
+</FormDialog>

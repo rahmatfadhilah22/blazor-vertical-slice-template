@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using BlazorTemplate.Client.Models;
+using BlazorTemplate.Shared.Localization;
 
 namespace BlazorTemplate.Client.Services;
 
@@ -9,8 +10,11 @@ namespace BlazorTemplate.Client.Services;
 /// - mengembalikan body bertipe pada sukses,
 /// - melempar <see cref="ApiException"/> pada gagal (HTTP error, body kosong, atau backend tak terjangkau).
 /// Jadi pemanggil hanya perlu menangani satu jenis exception.
+///
+/// Pesan bawaan (backend mati, timeout, respons kosong) diambil dari <see cref="Localizer"/>,
+/// jadi ikut berganti bahasa seperti teks UI lain.
 /// </summary>
-public class ApiClient(HttpClient http)
+public class ApiClient(HttpClient http, Localizer L)
 {
     public async Task<T> GetAsync<T>(string url)
     {
@@ -65,16 +69,18 @@ public class ApiClient(HttpClient http)
         await EnsureSuccessAsync(response);
     }
 
-    public async Task DeleteAsync(string url, object body)
+    /// <summary>
+    /// DELETE massal. Backend membaca <c>?ids=1&amp;ids=2</c> dari query
+    /// (<c>[FromQuery] int[] ids</c>), bukan body JSON.
+    /// </summary>
+    public async Task DeleteAsync<T>(string url, IEnumerable<T> ids)
     {
-        // Backend Categories/Delete membaca ids dari body JSON, bukan query string
-        // (diukur langsung: tanpa Content-Type json responsnya 415).
-        using var request = new HttpRequestMessage(HttpMethod.Delete, url) { Content = JsonContent.Create(body) };
-        using var response = await SendAsync(() => http.SendAsync(request));
+        var query = string.Join("&", ids.Select(id => $"ids={Uri.EscapeDataString(id?.ToString() ?? "")}"));
+        using var response = await SendAsync(() => http.DeleteAsync($"{url}?{query}"));
         await EnsureSuccessAsync(response);
     }
 
-    private static async Task<HttpResponseMessage> SendAsync(Func<Task<HttpResponseMessage>> send)
+    private async Task<HttpResponseMessage> SendAsync(Func<Task<HttpResponseMessage>> send)
     {
         try
         {
@@ -82,15 +88,15 @@ public class ApiClient(HttpClient http)
         }
         catch (HttpRequestException ex)
         {
-            throw new ApiException("Tidak bisa menghubungi server. Backend mati atau CORS menolak origin ini.", inner: ex);
+            throw new ApiException(L["api.unreachable"], inner: ex);
         }
         catch (TaskCanceledException ex)
         {
-            throw new ApiException("Permintaan ke server timeout.", inner: ex);
+            throw new ApiException(L["api.timeout"], inner: ex);
         }
     }
 
-    private static async Task<T> ReadJsonAsync<T>(HttpResponseMessage response)
+    private async Task<T> ReadJsonAsync<T>(HttpResponseMessage response)
     {
         await EnsureSuccessAsync(response);
 
@@ -101,13 +107,13 @@ public class ApiClient(HttpClient http)
         }
         catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
-            throw new ApiException("Respons server tidak bisa dibaca.", inner: ex);
+            throw new ApiException(L["api.badResponse"], inner: ex);
         }
 
-        return value ?? throw new ApiException("Respons kosong dari server.");
+        return value ?? throw new ApiException(L["api.emptyResponse"]);
     }
 
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response)
+    private async Task EnsureSuccessAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)
             return;
@@ -117,7 +123,7 @@ public class ApiClient(HttpClient http)
         catch (Exception ex) when (ex is JsonException or NotSupportedException) { /* bukan ProblemDetails */ }
 
         throw new ApiException(
-            problem?.Title ?? $"Request gagal ({(int)response.StatusCode} {response.StatusCode}).",
+            problem?.Title ?? L.Format("api.requestFailed", (int)response.StatusCode),
             problem?.Errors,
             (int)response.StatusCode);
     }

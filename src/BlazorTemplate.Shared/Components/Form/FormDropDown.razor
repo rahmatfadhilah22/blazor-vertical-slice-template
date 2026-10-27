@@ -1,0 +1,24 @@
+@typeparam TValue
+@inherits FormInputBase<TValue>
+@* Dropdown berlabel + error + validator wajib. Data/TextProperty/ValueProperty mengikuti
+   API Radzen apa adanya; pemuat opsi tetap tanggung jawab pemanggil (lihat dialog yang
+   memanggil GetRows dengan pageSize 100). *@
+<FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
+    <RadzenDropDown TValue="TValue" Name="@FieldName" @bind-Value="Value"
+                    Data="@Data" TextProperty="@TextProperty" ValueProperty="@ValueProperty"
+                    AllowClear="@AllowClear" AllowFiltering="true"
+                    Placeholder="@(Placeholder ?? L["common.optional"])" Disabled="@Disabled" />
+    @if (Required)
+    {
+        <RadzenRequiredValidator Component="@FieldName" Text="@L.Format("common.required", Label)" />
+    }
+</FormField>
+
+@code {
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+    [Parameter, EditorRequired] public string TextProperty { get; set; } = "";
+    [Parameter, EditorRequired] public string ValueProperty { get; set; } = "";
+    [Parameter] public bool AllowClear { get; set; } = true;
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Required { get; set; }
+}

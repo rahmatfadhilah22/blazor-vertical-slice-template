@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Radzen;
 using Radzen.Blazor;
 
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.DataGrid;
 
 public partial class DataGrid<TItem> : BaseComponent where TItem : notnull
 {

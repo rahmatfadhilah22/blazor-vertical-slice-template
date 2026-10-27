@@ -1,0 +1,24 @@
+@inherits BaseComponent
+<FormDialog TItem="Product" Data="_model" Columns="2" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.productName"]" Name="ProductName" Required MaxLength="40"
+                 @bind-Value="_model.ProductName" Error="@ErrorFor("ProductName")" />
+    <FormTextBox Label="@L["field.quantityPerUnit"]" Name="QuantityPerUnit" MaxLength="20"
+                 @bind-Value="_model.QuantityPerUnit" Error="@ErrorFor("QuantityPerUnit")" />
+    <FormDropDown Label="@L["field.category"]" Name="CategoryID" TValue="int?"
+                  Data="@_categories" TextProperty="CategoryName" ValueProperty="CategoryID"
+                  @bind-Value="_model.CategoryID" Error="@ErrorFor("CategoryID")" />
+    <FormDropDown Label="@L["field.supplier"]" Name="SupplierID" TValue="int?"
+                  Data="@_suppliers" TextProperty="CompanyName" ValueProperty="SupplierID"
+                  @bind-Value="_model.SupplierID" Error="@ErrorFor("SupplierID")" />
+    <FormNumeric Label="@L["field.unitPrice"]" Name="UnitPrice" TNumber="decimal?"
+                 @bind-Value="_model.UnitPrice" Error="@ErrorFor("UnitPrice")" />
+    <FormNumeric Label="@L["field.unitsInStock"]" Name="UnitsInStock" TNumber="int?"
+                 @bind-Value="_model.UnitsInStock" Error="@ErrorFor("UnitsInStock")" />
+    <FormNumeric Label="@L["field.unitsOnOrder"]" Name="UnitsOnOrder" TNumber="int?"
+                 @bind-Value="_model.UnitsOnOrder" Error="@ErrorFor("UnitsOnOrder")" />
+    <FormNumeric Label="@L["field.reorderLevel"]" Name="ReorderLevel" TNumber="int?"
+                 @bind-Value="_model.ReorderLevel" Error="@ErrorFor("ReorderLevel")" />
+    <FormCheckBox Label="@L["field.discontinued"]" Name="Discontinued"
+                  @bind-Value="_model.Discontinued" Error="@ErrorFor("Discontinued")" />
+</FormDialog>

@@ -1,0 +1,26 @@
+@inherits BaseComponent
+<FormDialog TItem="Supplier" Data="_model" Columns="2" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.companyName"]" Name="CompanyName" Required MaxLength="40"
+                 @bind-Value="_model.CompanyName" Error="@ErrorFor("CompanyName")" />
+    <FormTextBox Label="@L["field.contactName"]" Name="ContactName" MaxLength="30"
+                 @bind-Value="_model.ContactName" Error="@ErrorFor("ContactName")" />
+    <FormTextBox Label="@L["field.contactTitle"]" Name="ContactTitle" MaxLength="30"
+                 @bind-Value="_model.ContactTitle" Error="@ErrorFor("ContactTitle")" />
+    <FormTextBox Label="@L["field.address"]" Name="Address" MaxLength="60"
+                 @bind-Value="_model.Address" Error="@ErrorFor("Address")" />
+    <FormTextBox Label="@L["field.city"]" Name="City" MaxLength="15"
+                 @bind-Value="_model.City" Error="@ErrorFor("City")" />
+    <FormTextBox Label="@L["field.region"]" Name="Region" MaxLength="15"
+                 @bind-Value="_model.Region" Error="@ErrorFor("Region")" />
+    <FormTextBox Label="@L["field.postalCode"]" Name="PostalCode" MaxLength="10"
+                 @bind-Value="_model.PostalCode" Error="@ErrorFor("PostalCode")" />
+    <FormTextBox Label="@L["field.country"]" Name="Country" MaxLength="15"
+                 @bind-Value="_model.Country" Error="@ErrorFor("Country")" />
+    <FormTextBox Label="@L["field.phone"]" Name="Phone" MaxLength="24"
+                 @bind-Value="_model.Phone" Error="@ErrorFor("Phone")" />
+    <FormTextBox Label="@L["field.fax"]" Name="Fax" MaxLength="24"
+                 @bind-Value="_model.Fax" Error="@ErrorFor("Fax")" />
+    <FormTextBox Label="@L["field.homepage"]" Name="Homepage" MaxLength="200"
+                 @bind-Value="_model.Homepage" Error="@ErrorFor("Homepage")" />
+</FormDialog>

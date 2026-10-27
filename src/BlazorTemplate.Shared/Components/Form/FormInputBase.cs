@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.Form;
 
 /// <summary>
 /// Parameter yang sama untuk semua input berlabel di <see cref="FormField"/>:

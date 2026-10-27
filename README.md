@@ -1,6 +1,6 @@
 # BlazorTemplate
 
-Blazor WebAssembly client untuk backend Categories. Feature-sliced, tanpa abstraksi: satu `ApiClient` bersama, URL endpoint ditulis langsung di komponen fiturnya, satu halaman, satu dialog.
+Blazor WebAssembly client untuk 11 entitas Northwind di backend (Category, Product, Supplier, Shipper, Customer, Employee, Order, Region, Territory, UsState, CustomerDemographic). Feature-sliced, tanpa abstraksi: satu `ApiClient` bersama, URL endpoint ditulis langsung di komponen fiturnya, satu halaman, satu dialog per entitas.
 
 > **Catatan:** versi awal ini adalah Blazor WebAssembly standalone. Host MAUI Blazor Hybrid ditunda; RCL `BlazorTemplate.Client` tidak berubah saat host MAUI ditambahkan nanti.
 
@@ -8,7 +8,7 @@ Blazor WebAssembly client untuk backend Categories. Feature-sliced, tanpa abstra
 
 - .NET SDK 10 (`dotnet --list-sdks` harus menampilkan 10.x)
 - Backend berjalan di `http://localhost:5207`
-- Radzen.Blazor 12.x (dipatok `Version="12.*"` di RCL; restore saat ini: 12.1.6)
+- Radzen.Blazor 12.x (dipatok `Version="12.*"` di RCL; restore saat ini: 12.1.7)
 - Tidak butuh Node/npm, tidak ada workload tambahan untuk WASM
 
 ## CORS wajib di backend
@@ -57,27 +57,27 @@ dotnet build
 
 Base URL: `http://localhost:5207`
 
+Semua entitas memakai pola route dan kontrak yang sama; ganti `Categories` dengan nama controller dan tipe id-nya.
+
 | Method | Path | Request | Success |
 |---|---|---|---|
-| GET | `/api/Categories/GetRows?page=1&pageSize=10&search=tea` | — | 200 `PagedResult<Category>` |
-| GET | `/api/Categories/GetRow/{id}` | — | 200 Category, 404 jika tidak ada |
-| POST | `/api/Categories/Insert` | `SaveCategoryRequest` | 201 Category |
-| PUT | `/api/Categories/Update/{id}` | `SaveCategoryRequest` | 204, 404 jika tidak ada |
-| DELETE | `/api/Categories/Delete` | `int[]` (JSON body, mis. `[1,2]`) | 204; 404 jika ada id tidak ditemukan (tidak ada yang dihapus) |
+| GET | `/api/{Controller}/GetRows?page=1&pageSize=10&search=tea` | — | 200 `PagedResult<T>` |
+| GET | `/api/{Controller}/GetRow/{id}` | — | 200 T, 404 jika tidak ada |
+| POST | `/api/{Controller}/Insert` | model T | 201 T |
+| PUT | `/api/{Controller}/Update/{id}` | model T | 204, 404 jika tidak ada |
+| DELETE | `/api/{Controller}/Delete?ids=1&ids=2` | `[FromQuery] id[]` | 204; 404 jika ada id tidak ditemukan (tidak ada yang dihapus) |
+
+Controller dan tipe id: `Categories`, `Products`, `Orders`, `Regions`, `Shippers`, `Suppliers`, `Employees`, `UsStates` → `int`; `Customers`, `Territories`, `CustomerDemographics` → `string`. Id `0` pada Insert = server menentukan id. `Product.Discontinued` dikirim sebagai angka 0/1, dipetakan ke `bool` lewat `BoolIntConverter`. Tanggal memakai `DateOnly?`; uang `decimal?` di klien.
 
 ```jsonc
 // PagedResult
-{ "items": [ /* Category */ ], "page": 1, "pageSize": 10, "total": 8, "totalPages": 1 }
+{ "items": [ /* T */ ], "page": 1, "pageSize": 10, "total": 8, "totalPages": 1 }
 
 // Category
 { "categoryID": 1, "categoryName": "Beverages", "description": "Soft drinks", "picture": "" }
-
-// SaveCategoryRequest (body Insert/Update) — categoryId 0 = server menentukan id.
-// Bentuk body sama dengan Category, jadi klien memakai model Category untuk keduanya.
-{ "categoryId": 0, "categoryName": "Snacks", "description": "Chips", "picture": null }
 ```
 
-Validasi server (form ikut meniru, server tetap otoritas): `categoryName` wajib, maks 15 karakter; `categoryId` 0–32767; `page >= 1`; `pageSize` 1–100. `page` 1-based, `pageSize` tetap 10 di v1.
+Validasi server (form ikut meniru, server tetap otoritas): field wajib dan `MaxLength` per entitas mengikuti model; `page >= 1`; `pageSize` 1–100. `page` 1-based.
 
 Error memakai RFC 9457 ProblemDetails; yang ditampilkan ke pengguna hanya `title`. Validasi mengembalikan 400 dengan `errors: { "field": ["pesan"] }`.
 
@@ -99,25 +99,24 @@ Trailing slash ditambahkan otomatis di `Program.cs`; URL endpoint ditulis relati
 
 ```
 src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas Radzen
-  Components/Button.razor(+.cs)         wrapper RadzenButton + enum ButtonVariant
   Components/BaseComponent.cs           base class: DialogService + NotificationService + L
   Components/PageHeader.razor           judul halaman + slot aksi
   Components/EmptyState.razor           kondisi kosong / gagal muat
-  Components/FieldError.razor           pesan error di bawah field
-  Components/DataGrid.razor(+.cs)       grid server-side (parameter inti saja)
-  Components/DataGridLoadArgs.cs        DataGridLoadArgs (Page/PageSize/Search) + DataGridPage (Items/Total)
-  Components/FormDialog.razor           kerangka dialog insert/update: validasi, grid field, footer
-  Components/FormField.razor            label + input + error untuk satu field
-  Components/FormTextBox.razor          FormField + RadzenTextBox + validator wajib
-  Components/DialogSize.cs              lebar dialog dari jumlah kolom (bukan static di FormDialog: generic)
-  Components/DialogGuard.cs             status simpan bersama untuk DialogOptions.CanClose
   Components/LanguageSwitch.razor       dropdown pemilih bahasa di header
+  Components/Button/                    Button.razor (wrapper RadzenButton) + ButtonEnums.cs
+  Components/DataGrid/                  DataGrid.razor(+.cs) grid server-side + DataGridLoadArgs.cs
+  Components/Form/                      FormInputBase + FormTextBox/FormTextArea/FormNumeric/
+                                        FormCheckBox/FormSwitch/FormDatePicker/FormDropDown,
+                                        FormField, FieldError, FormDialog, DialogSize, DialogGuard
   Localization/Localizer.cs             teks UI per bahasa + event Changed
 src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
-  Models/                               Category, PagedResult
+  Models/                               11 entitas + BoolIntConverter + PagedResult
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
-  Features/Categories/Pages/            CategoryListPage — komposisi saja, tanpa Radzen
+  Features/Categories/Pages/            CategoryList — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
+  Features/<Entity>/Pages|Components/   pola yang sama untuk Products, Suppliers, Shippers,
+                                        Customers, Regions, Territories, UsStates,
+                                        CustomerDemographics, Employees, Orders
   Layout/MainLayout.razor               RadzenTheme (material) + RadzenComponents + menu
   Layout/PlainLayout.razor              kerangka tanpa menu, untuk halaman 404
   Routes.razor                          router + halaman NotFound
@@ -127,13 +126,25 @@ src/BlazorTemplate.Client.App/       Blazor WASM host
   Program.cs                            registrasi service + HttpClient + base URL
   LoggingHandler.cs                     log semua request/response ke console browser
   wwwroot/index.html                    theme CSS + blazor boot
+  wwwroot/js/devinspect.js              script panel DEBUG (dipakai DevInspector)
   wwwroot/appsettings.json              Api:BaseUrl
   wwwroot/css/theme.css                 warna terpusat (CSS variable Radzen)
 ```
 
+Aturan namespace = folder: `Components/Button/` ber-namespace
+`BlazorTemplate.Shared.Components.Button`, `DataGrid/` → `...DataGrid`, `Form/` → `...Form`.
+`_Imports.razor` di Shared dan Client sudah meng-import ketiganya. Folder komponen baru
+butuh satu baris `@using` baru di kedua `_Imports.razor`, karena tag komponen dicari lewat
+namespace — bukan lewat folder.
+
+`MainLayout` membungkus `@Body` dengan `ErrorBoundary`: exception saat render satu
+halaman menampilkan `EmptyState` + tombol "Coba lagi" yang memulihkan boundary, bukan
+halaman putih. Exception di event handler tidak ditangkap boundary — itu tetap muncul
+di console browser.
+
 ### Aturan API
 
-`ApiClient` adalah satu-satunya yang menyentuh `HttpClient`. Method-nya selalu: mengembalikan body bertipe pada sukses, atau melempar `ApiException` (HTTP error, body bukan JSON, body kosong, backend tak terjangkau, timeout). Pemanggil hanya menangani satu jenis exception — `ApiException.Errors` berisi error per field dari 400, `Message` berisi `title` ProblemDetails.
+`ApiClient` adalah satu-satunya yang menyentuh `HttpClient`. Method-nya selalu: mengembalikan body bertipe pada sukses, atau melempar `ApiException` (HTTP error, body bukan JSON, body kosong, backend tak terjangkau, timeout). Pemanggil hanya menangani satu jenis exception — `ApiException.Errors` berisi error per field dari 400, `Message` berisi `title` ProblemDetails. Pesan bawaan `ApiClient` (backend mati, timeout, respons kosong) diambil dari `Localizer` (`api.*`), jadi ikut berganti bahasa.
 
 Endpoint berpaging punya method khusus; path-nya tetap argumen karena nama action backend bisa berbeda-beda:
 
@@ -205,13 +216,15 @@ Dialog master data tidak menulis ulang validasi, footer tombol, dan pesan error.
                  Placeholder="@L["category.nameHint"]"
                  @bind-Value="_model.CategoryName"
                  Error="@ErrorFor("CategoryName")" />
-    <FormField Label="@L["category.description"]" Error="@ErrorFor("Description")" FullWidth>
-        <RadzenTextArea Name="Description" @bind-Value="_model.Description" Rows="3" />
-    </FormField>
+    <FormTextArea Label="@L["category.description"]" Name="Description" FullWidth Rows="3"
+                  Placeholder="@L["common.optional"]"
+                  @bind-Value="_model.Description"
+                  Error="@ErrorFor("Description")" />
 </FormDialog>
 ```
 
-- `FormTextBox` = `FormField` + `RadzenTextBox` + `RadzenRequiredValidator` dalam satu komponen. Pesan wajibnya dibuat dari label ("Nama kategori wajib diisi."), jadi tidak ditulis ulang tiap field. `Name` opsional — kalau kosong, label dipakai sebagai nama untuk dicocokkan validator. Untuk input selain teks (textarea, dropdown, numeric, date), tetap pakai `FormField` dan validator Radzen sendiri.
+- `FormTextBox` = `FormField` + `RadzenTextBox` + `RadzenRequiredValidator` dalam satu komponen. Pesan wajibnya dibuat dari label ("Nama kategori wajib diisi."), jadi tidak ditulis ulang tiap field. `Name` opsional — kalau kosong, label dipakai sebagai nama untuk dicocokkan validator.
+- Input lain memakai wrapper yang sama: `FormTextArea` (`Rows`), `FormNumeric<TNumber>` (`int`, `decimal`, atau versi nullable-nya), `FormCheckBox`, `FormSwitch` (switch/toggle), `FormDatePicker<TValue>` (`DateOnly?`), dan `FormDropDown<TValue>` (`Data`, `TextProperty`, `ValueProperty`). Semuanya mewarisi `FormInputBase<T>` — `Label`, `Name`, `Value`, `Error`, `FullWidth`, `Disabled` — jadi bentuk label, error, dan validasi wajib seragam. `FormDropDown` hanya menerima daftar yang sudah dimuat; dialog pemakainya memanggil `GetRows` dengan `pageSize: 100` sekali di `OnInitializedAsync` (batas backend).
 - Atribut `Required` hanya memasang validator di klien. Kolom yang wajib di database tetap harus `[Required]` di request server; dua-duanya perlu.
 
 - `Columns` = jumlah field per baris. Field berikutnya otomatis turun ke baris baru; `FullWidth` membuat field selebar baris (textarea). Di bawah 640px grid jadi 1 kolom.
@@ -267,13 +280,13 @@ Kelas utilitas yang dipakai harus benar-benar ada di Radzen 12: `rz-color-danger
 
 ### Hapus massal
 
-Tidak ada tombol hapus per baris. `AllowSelection` menambahkan kolom checkbox (dengan checkbox pilih-semua di header); pilihan disimpan `DataGrid` sebagai `HashSet<TItem>` dan dibaca pemakai lewat `_grid.SelectedItems`, lalu dikirim dalam satu request DELETE dengan body `[1,2]`.
+Tidak ada tombol hapus per baris. `AllowSelection` menambahkan kolom checkbox (dengan checkbox pilih-semua di header); pilihan disimpan `DataGrid` sebagai `HashSet<TItem>` dan dibaca pemakai lewat `_grid.SelectedItems`, lalu dikirim dalam satu request DELETE dengan query `?ids=1&ids=2`.
 
 - Checkbox header memakai `TriState="false"` dengan nilai `bool?`: tercentang = semua baris halaman terpilih, garis = sebagian, kosong = tidak ada. Nilai `null` hanya ditampilkan, bukan bagian siklus klik — `TriState="true"` akan membuat klik pertama menghasilkan "sebagian".
 - Pilih-semua hanya menjangkau baris yang sedang tampil di halaman, bukan seluruh database. Memilih seluruh hasil filter butuh parameter tambahan — belum ada.
 - Pilihan dikosongkan setiap `LoadData`, dan pemakai dapat `SelectionChanged` untuk me-render ulang toolbar (label "Hapus (n)").
 
-> Catatan: spesifikasi awal menyebut query string (`?ids=1&ids=2`), tapi backend aslinya menolak dengan 415 kalau body JSON tidak ada — `ids` dibaca dari body (dipastikan dengan probe curl).
+> Backend membaca `ids` dari query (`[FromQuery] int[]/string[] ids`), bukan body JSON. `DeleteAsync` menulis query itu untuk semua tipe id; `Uri.EscapeDataString` dipakai agar id string (mis. `ABCDE`) aman.
 
 ### Pencarian
 
@@ -370,7 +383,14 @@ Yang perlu diingat saat mengubah tampilan:
 | `DataGrid<TItem>` | grid server-side: pemakai hanya menyuplai `LoadData` + kolom; baris, total, halaman, ukuran halaman, pencarian, loading, pilihan baris, dan error diurus grid | `LoadData` (lambda → `DataGridPage<T>`), `PageSize`, `PageSizeOptions`, `AllowSearch`, `SearchPlaceholder`, `AllowSelection`, `SelectionChanged`, `Toolbar`, `EmptyTemplate`; `SelectedItems`, `SelectedCount`, `ReloadAsync(firstPage)` |
 | `FormDialog<TItem>` | kerangka dialog insert/update: validasi Radzen, grid field otomatis turun baris, error umum, footer Batal/Simpan | `TItem`, `Data`, `Columns`, `Submit`, `IsBusy`, `ErrorMessage`, `SubmitText`, `CancelText` |
 | `FormField` | label + input + pesan error satu field | `Label`, `Error`, `FullWidth` |
+| `FormInputBase<T>` | parameter bersama semua input berlabel di atas `FormField` | `Label`, `Name` (opsional), `Value`/`ValueChanged`, `Error`, `FullWidth`, `Disabled` |
 | `FormTextBox` | `FormField` + `RadzenTextBox` + validator wajib; pesan wajib dari label | `Label`, `Name` (opsional), `Required`, `MaxLength`, `Placeholder`, `Disabled`, `Value`/`ValueChanged`, `Error`, `FullWidth` |
+| `FormTextArea` | teks panjang; `Rows` default 3 | seperti `FormTextBox` + `Rows` |
+| `FormNumeric<TNumber>` | input angka; `TNumber` = `decimal`, `int`, `decimal?`, `int?`, dst. | seperti `FormTextBox` tanpa `MaxLength` |
+| `FormDatePicker<TValue>` | tanggal; pakai `TValue="DateOnly?"` | seperti `FormTextBox` + `DateFormat` (default `yyyy-MM-dd`), `Placeholder` |
+| `FormDropDown<TValue>` | pilihan dari daftar objek; nama properti teks/nilai eksplisit | `Data`, `TextProperty`, `ValueProperty`, `AllowClear`, `Placeholder`, `Required` |
+| `FormCheckBox` | checkbox bool; label membungkus kontrol | `Label`, `Name`, `Value`/`ValueChanged`, `Error`, `FullWidth`, `Disabled` |
+| `FormSwitch` | switch/toggle bool | `Label`, `Name`, `Value`/`ValueChanged`, `Error`, `FullWidth`, `Disabled` |
 | `DialogGuard` | status simpan bersama antara dialog dan `DialogOptions.CanClose`, supaya X/Escape/overlay tidak menutup dialog saat request jalan | `Busy` |
 | `LanguageSwitch` | dropdown bahasa di header (Indonesia / English) | — |
 | `DialogSize` | lebar dialog dari jumlah kolom, untuk `DialogOptions.Width` | `WidthFor(columns)` |
@@ -384,5 +404,8 @@ Wrapper `DataGrid` hanya meneruskan parameter inti (`LoadData`, `PageSize`, kolo
 - Belum ada autentikasi
 - Belum ada offline support
 - Belum ada test
-- Kolom `picture` tidak ditampilkan dan tidak bisa diedit
+- Belum ada CI/pipeline
+- Lookup dropdown dimuat maks 100 baris (batas `pageSize`); belum ada endpoint lookup khusus
+- Kolom `picture`/`photo` tidak ditampilkan dan tidak bisa diedit (tidak ada endpoint upload)
+- Tidak ada OrderDetails (backend tidak mengeksposnya)
 - Host MAUI Blazor Hybrid belum dibuat (yang ada: Blazor WebAssembly)

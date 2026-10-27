@@ -1,0 +1,23 @@
+@inherits BaseComponent
+<DataGrid @ref="_grid" TItem="CustomerDemographic" AllowSearch AllowSelection
+          SearchPlaceholder="@L.Format("common.searchFor", L["entity.customerDemographics"])"
+          LoadData="LoadAsync" SelectionChanged="StateHasChanged">
+    <Toolbar>
+        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Success"
+                Click="@(() => OpenFormAsync(null))" />
+        <Button Text="@DeleteText" Icon="delete" Variant="ButtonVariant.Danger"
+                Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
+    </Toolbar>
+    <ChildContent>
+        <RadzenDataGridColumn TItem="CustomerDemographic" Property="CustomerTypeID"
+                              Title="@L["field.customerTypeID"]" Width="25%" />
+        <RadzenDataGridColumn TItem="CustomerDemographic" Property="CustomerDesc"
+                              Title="@L["field.customerDesc"]" Width="60%" />
+        <RadzenDataGridColumn TItem="CustomerDemographic" Context="demographic" Title="@L["common.action"]"
+                              Sortable="false" Filterable="false" Width="15%" TextAlign="TextAlign.Center">
+            <Template>
+                <Button Icon="edit" Size="ButtonSize.Small" Click="@(() => OpenFormAsync(demographic))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </ChildContent>
+</DataGrid>

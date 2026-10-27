@@ -1,0 +1,12 @@
+@inherits BaseComponent
+<FormDialog TItem="Territory" Data="_model" Columns="1" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.territoryID"]" Name="TerritoryID" Required MaxLength="20"
+                 Disabled="@(Territory is not null)"
+                 @bind-Value="_model.TerritoryID" Error="@ErrorFor("TerritoryID")" />
+    <FormTextBox Label="@L["field.territoryDescription"]" Name="TerritoryDescription" Required MaxLength="50"
+                 @bind-Value="_model.TerritoryDescription" Error="@ErrorFor("TerritoryDescription")" />
+    <FormDropDown Label="@L["field.region"]" Name="RegionID" TValue="int"
+                  Data="@_regions" TextProperty="RegionDescription" ValueProperty="RegionID" Required
+                  @bind-Value="_model.RegionID" Error="@ErrorFor("RegionID")" />
+</FormDialog>

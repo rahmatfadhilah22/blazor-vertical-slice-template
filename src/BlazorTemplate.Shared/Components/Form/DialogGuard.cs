@@ -1,4 +1,4 @@
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.Form;
 
 /// <summary>
 /// Penghubung status simpan antara pemanggil DialogService.OpenAsync dan isi dialog.

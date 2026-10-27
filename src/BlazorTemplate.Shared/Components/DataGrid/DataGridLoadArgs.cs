@@ -1,4 +1,4 @@
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.DataGrid;
 
 /// <summary>
 /// Argumen LoadData versi grid ini: hanya yang dibutuhkan endpoint server-side.

@@ -1,4 +1,4 @@
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.Form;
 
 /// <summary>
 /// Lebar dialog untuk <see cref="FormDialog{TItem}"/>.

@@ -23,14 +23,40 @@
             <RadzenPanelMenu>
                 <RadzenPanelMenuItem Text="@L["menu.masterData"]" Icon="folder" Expanded="true">
                     <RadzenPanelMenuItem Text="@L["menu.categories"]" Icon="category" Path="categories" />
+                    <RadzenPanelMenuItem Text="@L["entity.products"]" Icon="inventory_2" Path="products" />
+                    <RadzenPanelMenuItem Text="@L["entity.suppliers"]" Icon="storefront" Path="suppliers" />
+                    <RadzenPanelMenuItem Text="@L["entity.shippers"]" Icon="local_shipping" Path="shippers" />
+                    <RadzenPanelMenuItem Text="@L["entity.customers"]" Icon="groups" Path="customers" />
+                    <RadzenPanelMenuItem Text="@L["entity.regions"]" Icon="map" Path="regions" />
+                    <RadzenPanelMenuItem Text="@L["entity.territories"]" Icon="place" Path="territories" />
+                    <RadzenPanelMenuItem Text="@L["entity.usStates"]" Icon="flag" Path="us-states" />
+                    <RadzenPanelMenuItem Text="@L["entity.customerDemographics"]" Icon="insights"
+                                         Path="customer-demographics" />
+                </RadzenPanelMenuItem>
+                <RadzenPanelMenuItem Text="@L["menu.people"]" Icon="badge">
+                    <RadzenPanelMenuItem Text="@L["entity.employees"]" Icon="person" Path="employees" />
+                </RadzenPanelMenuItem>
+                <RadzenPanelMenuItem Text="@L["menu.transactions"]" Icon="receipt_long">
+                    <RadzenPanelMenuItem Text="@L["entity.orders"]" Icon="shopping_cart" Path="orders" />
                 </RadzenPanelMenuItem>
             </RadzenPanelMenu>
         </div>
     </RadzenSidebar>
 
     <RadzenBody>
-        @* RadzenBody sudah punya padding 1rem; jangan tambah wrapper ber-padding lagi. *@
-        @Body
+        @* Error render di satu halaman tidak mematikan seluruh app: tampilkan pesan +
+           "Coba lagi" yang memulihkan boundary. *@
+        <ErrorBoundary @ref="_boundary">
+            <ChildContent>
+                @* RadzenBody sudah punya padding 1rem; jangan tambah wrapper ber-padding lagi. *@
+                @Body
+            </ChildContent>
+            <ErrorContent>
+                <EmptyState Message="@L["common.error"]" Icon="error_outline">
+                    <Button Text="@L["common.retry"]" Click="@(() => _boundary?.Recover())" />
+                </EmptyState>
+            </ErrorContent>
+        </ErrorBoundary>
     </RadzenBody>
 </RadzenLayout>
 
@@ -41,6 +67,7 @@
 
 @code {
     private bool _sidebarExpanded = true;
+    private ErrorBoundary? _boundary;
 
     // Layout tidak mewarisi BaseComponent (harus LayoutComponentBase), jadi langganan
     // perubahan bahasa dipasang manual di sini.

@@ -1,4 +1,4 @@
-namespace BlazorTemplate.Shared.Components;
+namespace BlazorTemplate.Shared.Components.Button;
 
 /// <summary>
 /// Makna tombol, bukan nama tipe library. Pemetaan ke Radzen ada di Button.razor,

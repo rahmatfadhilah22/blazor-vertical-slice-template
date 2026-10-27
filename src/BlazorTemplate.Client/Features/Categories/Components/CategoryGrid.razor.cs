@@ -1,6 +1,8 @@
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
+using BlazorTemplate.Shared.Components.DataGrid;
+using BlazorTemplate.Shared.Components.Form;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 

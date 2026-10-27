@@ -1,0 +1,8 @@
+@inherits BaseComponent
+<FormDialog TItem="Shipper" Data="_model" Columns="1" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.companyName"]" Name="CompanyName" Required MaxLength="40"
+                 @bind-Value="_model.CompanyName" Error="@ErrorFor("CompanyName")" />
+    <FormTextBox Label="@L["field.phone"]" Name="Phone" MaxLength="24"
+                 @bind-Value="_model.Phone" Error="@ErrorFor("Phone")" />
+</FormDialog>

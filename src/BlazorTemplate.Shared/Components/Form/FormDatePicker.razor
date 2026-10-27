@@ -1,0 +1,18 @@
+@typeparam TValue
+@inherits FormInputBase<TValue>
+@* Date picker berlabel + error + validator wajib.
+   TValue: DateOnly? (dipakai backend ini), DateTime?, atau DateTimeOffset?. *@
+<FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
+    <RadzenDatePicker TValue="TValue" Name="@FieldName" @bind-Value="Value" DateFormat="@DateFormat"
+                      Placeholder="@Placeholder" Disabled="@Disabled" AllowClear="true" />
+    @if (Required)
+    {
+        <RadzenRequiredValidator Component="@FieldName" Text="@L.Format("common.required", Label)" />
+    }
+</FormField>
+
+@code {
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string DateFormat { get; set; } = "yyyy-MM-dd";
+    [Parameter] public string? Placeholder { get; set; }
+}

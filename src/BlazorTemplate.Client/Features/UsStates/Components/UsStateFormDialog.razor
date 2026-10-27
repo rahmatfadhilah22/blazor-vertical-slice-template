@@ -1,0 +1,10 @@
+@inherits BaseComponent
+<FormDialog TItem="UsState" Data="_model" Columns="1" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["field.stateName"]" Name="StateName" Required MaxLength="50"
+                 @bind-Value="_model.StateName" Error="@ErrorFor("StateName")" />
+    <FormTextBox Label="@L["field.stateAbbr"]" Name="StateAbbr" MaxLength="2"
+                 @bind-Value="_model.StateAbbr" Error="@ErrorFor("StateAbbr")" />
+    <FormTextBox Label="@L["field.stateRegion"]" Name="StateRegion" MaxLength="50"
+                 @bind-Value="_model.StateRegion" Error="@ErrorFor("StateRegion")" />
+</FormDialog>
