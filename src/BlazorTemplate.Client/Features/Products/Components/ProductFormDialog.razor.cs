@@ -3,6 +3,7 @@ using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
 using BlazorTemplate.Shared.Components.Form;
 using Microsoft.AspNetCore.Components;
+using Radzen;
 
 namespace BlazorTemplate.Client.Features.Products.Components;
 
@@ -42,8 +43,7 @@ public partial class ProductFormDialog : BaseComponent
 
         try
         {
-            // ponytail: lookup dimuat sekali, maks 100 baris (batas backend). Ganti ke
-            // endpoint lookup khusus kalau katalog melewati 100.
+            // Daftar awal untuk menampilkan nilai terpilih; pencarian dropdown memakai LoadXxxAsync.
             _categories = (await Api.GetPagedAsync<Category>("Categories/GetRows", 1, 100)).Items.ToList();
             _suppliers = (await Api.GetPagedAsync<Supplier>("Suppliers/GetRows", 1, 100)).Items.ToList();
         }
@@ -52,6 +52,12 @@ public partial class ProductFormDialog : BaseComponent
             _message = ex.Message;
         }
     }
+
+    private async Task LoadCategoriesAsync(LoadDataArgs args)
+        => _categories = (await Api.GetPagedAsync<Category>("Categories/GetRows", 1, 50, args.Filter)).Items.ToList();
+
+    private async Task LoadSuppliersAsync(LoadDataArgs args)
+        => _suppliers = (await Api.GetPagedAsync<Supplier>("Suppliers/GetRows", 1, 50, args.Filter)).Items.ToList();
 
     private string? ErrorFor(string field)
         => _errors.TryGetValue(field, out var message) ? message : null;

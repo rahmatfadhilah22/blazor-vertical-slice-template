@@ -23,7 +23,7 @@ public abstract class BaseComponent : ComponentBase, IDisposable
 
     protected override void OnInitialized() => L.Changed += StateHasChanged;
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         L.Changed -= StateHasChanged;
         GC.SuppressFinalize(this);

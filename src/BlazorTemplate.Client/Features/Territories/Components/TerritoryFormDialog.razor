@@ -8,5 +8,6 @@
                  @bind-Value="_model.TerritoryDescription" Error="@ErrorFor("TerritoryDescription")" />
     <FormDropDown Label="@L["field.region"]" Name="RegionID" TValue="int"
                   Data="@_regions" TextProperty="RegionDescription" ValueProperty="RegionID" Required
+                  LoadData="LoadRegionsAsync"
                   @bind-Value="_model.RegionID" Error="@ErrorFor("RegionID")" />
 </FormDialog>

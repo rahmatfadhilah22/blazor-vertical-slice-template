@@ -23,42 +23,100 @@
     <aside class="app-dev-panel">
         <header class="app-dev-head">
             <div class="app-dev-head-text">
-                <strong>Route &amp; komponen</strong>
+                <strong>@(_tab == Tab.Api ? "API log" : "Route & komponen")</strong>
                 <code class="app-dev-now">@CurrentPath</code>
             </div>
             <button class="app-dev-close" @onclick="() => _open = false" title="Tutup">&times;</button>
         </header>
 
-        <input type="text" class="rz-textbox app-dev-search" placeholder="Cari nama, route, atau file..."
-               @bind="_filter" @bind:event="oninput" />
-
-        <div class="app-dev-list">
-            @foreach (var group in Groups)
-            {
-                <p class="app-dev-group">@group.Title (@group.Entries.Count)</p>
-                @foreach (var entry in group.Entries)
-                {
-                    <button class="app-dev-row @(IsCurrent(entry) ? "is-current" : null)"
-                            @onclick="() => CopyAsync(entry.Path)">
-                        <span class="app-dev-name">
-                            @entry.Name
-                            @if (entry.Route is not null)
-                            {
-                                <code class="app-dev-route">@entry.Route</code>
-                            }
-                        </span>
-                        <span class="app-dev-path">@entry.Path</span>
-                    </button>
-                }
-            }
-
-            @if (Groups.Count == 0)
-            {
-                <p class="app-dev-empty">Tidak ada yang cocok dengan "@_filter".</p>
-            }
+        <div class="app-dev-tabs">
+            <button class="app-dev-tab @(_tab == Tab.Route ? "is-active" : null)"
+                    @onclick="() => _tab = Tab.Route">Route</button>
+            <button class="app-dev-tab @(_tab == Tab.Api ? "is-active" : null)"
+                    @onclick="() => _tab = Tab.Api">API @ApiLog.Entries.Count</button>
         </div>
 
-        <footer class="app-dev-foot">@(_copied ?? "Klik baris untuk menyalin path.")</footer>
+        @if (_tab == Tab.Route)
+        {
+            <input type="text" class="rz-textbox app-dev-search" placeholder="Cari nama, route, atau file..."
+                   @bind="_filter" @bind:event="oninput" />
+
+            <div class="app-dev-list">
+                @foreach (var group in Groups)
+                {
+                    <p class="app-dev-group">@group.Title (@group.Entries.Count)</p>
+                    @foreach (var entry in group.Entries)
+                    {
+                        <button class="app-dev-row @(IsCurrent(entry) ? "is-current" : null)"
+                                @onclick="() => CopyAsync(entry.Path)">
+                            <span class="app-dev-name">
+                                @entry.Name
+                                @if (entry.Route is not null)
+                                {
+                                    <code class="app-dev-route">@entry.Route</code>
+                                }
+                            </span>
+                            <span class="app-dev-path">@entry.Path</span>
+                        </button>
+                    }
+                }
+
+                @if (Groups.Count == 0)
+                {
+                    <p class="app-dev-empty">Tidak ada yang cocok dengan "@_filter".</p>
+                }
+            </div>
+
+            <footer class="app-dev-foot">@(_copied ?? "Klik baris untuk menyalin path.")</footer>
+        }
+        else
+        {
+            <div class="app-dev-list">
+                @if (ApiLog.Entries.Count == 0)
+                {
+                    <p class="app-dev-empty">Belum ada request.</p>
+                }
+
+                @foreach (var entry in ApiLog.Entries)
+                {
+                    <button class="app-dev-row @(entry.Status is null or >= 400 ? "is-error" : null)"
+                            @onclick="() => Toggle(entry.Seq)">
+                        <span class="app-dev-name">
+                            <code class="app-dev-method">@entry.Method</code>
+                            <span class="app-dev-status">@(entry.Status?.ToString() ?? "ERR")</span>
+                            <span class="app-dev-ms">@entry.ElapsedMs ms · @entry.At.ToString("HH:mm:ss")</span>
+                        </span>
+                        <span class="app-dev-path">@ShortUrl(entry.Url)</span>
+                    </button>
+
+                    @if (_expanded == entry.Seq)
+                    {
+                        <div class="app-dev-detail">
+                            @if (entry.Request is not null)
+                            {
+                                <p class="app-dev-label">Request</p>
+                                <pre>@ApiLog.Pretty(entry.Request)</pre>
+                            }
+                            @if (entry.Response is not null)
+                            {
+                                <p class="app-dev-label">Response</p>
+                                <pre>@ApiLog.Pretty(entry.Response)</pre>
+                            }
+                            @if (entry.Error is not null)
+                            {
+                                <p class="app-dev-label">Error</p>
+                                <pre>@entry.Error</pre>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            <footer class="app-dev-foot">
+                <button class="app-dev-clear" @onclick="ApiLog.Clear">Bersihkan</button>
+                Klik baris untuk lihat body.
+            </footer>
+        }
     </aside>
 }
 
@@ -66,6 +124,30 @@
     private bool _open;
     private string _filter = "";
     private string? _copied;
+
+    private enum Tab { Route, Api }
+
+    private Tab _tab;
+    private int? _expanded;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ApiLog.Changed += OnApiLogChanged;
+    }
+
+    public override void Dispose()
+    {
+        ApiLog.Changed -= OnApiLogChanged;
+        base.Dispose();
+    }
+
+    private void OnApiLogChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void Toggle(int seq) => _expanded = _expanded == seq ? null : seq;
+
+    private static string ShortUrl(string url)
+        => Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.PathAndQuery : url;
 
     private string CurrentPath => new Uri(Nav.Uri).PathAndQuery;
 

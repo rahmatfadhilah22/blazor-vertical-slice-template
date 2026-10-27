@@ -3,9 +3,11 @@
             ErrorMessage="@_message" Submit="SaveAsync">
     <FormDropDown Label="@L["field.customerID"]" Name="CustomerID" TValue="string?"
                   Data="@_customers" TextProperty="CompanyName" ValueProperty="CustomerID"
+                  LoadData="LoadCustomersAsync"
                   @bind-Value="_model.CustomerID" Error="@ErrorFor("CustomerID")" />
     <FormDropDown Label="@L["field.employeeID"]" Name="EmployeeID" TValue="int?"
                   Data="@_employees" TextProperty="LastName" ValueProperty="EmployeeID"
+                  LoadData="LoadEmployeesAsync"
                   @bind-Value="_model.EmployeeID" Error="@ErrorFor("EmployeeID")" />
     <FormDatePicker Label="@L["field.orderDate"]" Name="OrderDate" TValue="DateOnly?"
                     @bind-Value="_model.OrderDate" Error="@ErrorFor("OrderDate")" />
@@ -15,6 +17,7 @@
                     @bind-Value="_model.ShippedDate" Error="@ErrorFor("ShippedDate")" />
     <FormDropDown Label="@L["field.shipVia"]" Name="ShipVia" TValue="int?"
                   Data="@_shippers" TextProperty="CompanyName" ValueProperty="ShipperID"
+                  LoadData="LoadShippersAsync"
                   @bind-Value="_model.ShipVia" Error="@ErrorFor("ShipVia")" />
     <FormNumeric Label="@L["field.freight"]" Name="Freight" TNumber="decimal?"
                  @bind-Value="_model.Freight" Error="@ErrorFor("Freight")" />

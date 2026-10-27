@@ -15,6 +15,7 @@
                     @bind-Value="_model.HireDate" Error="@ErrorFor("HireDate")" />
     <FormDropDown Label="@L["field.reportsTo"]" Name="ReportsTo" TValue="int?"
                   Data="@_employees" TextProperty="LastName" ValueProperty="EmployeeID"
+                  LoadData="LoadEmployeesAsync"
                   @bind-Value="_model.ReportsTo" Error="@ErrorFor("ReportsTo")" />
     <FormTextBox Label="@L["field.extension"]" Name="Extension" MaxLength="4"
                  @bind-Value="_model.Extension" Error="@ErrorFor("Extension")" />

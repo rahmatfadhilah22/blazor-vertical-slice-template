@@ -7,9 +7,11 @@
                  @bind-Value="_model.QuantityPerUnit" Error="@ErrorFor("QuantityPerUnit")" />
     <FormDropDown Label="@L["field.category"]" Name="CategoryID" TValue="int?"
                   Data="@_categories" TextProperty="CategoryName" ValueProperty="CategoryID"
+                  LoadData="LoadCategoriesAsync"
                   @bind-Value="_model.CategoryID" Error="@ErrorFor("CategoryID")" />
     <FormDropDown Label="@L["field.supplier"]" Name="SupplierID" TValue="int?"
                   Data="@_suppliers" TextProperty="CompanyName" ValueProperty="SupplierID"
+                  LoadData="LoadSuppliersAsync"
                   @bind-Value="_model.SupplierID" Error="@ErrorFor("SupplierID")" />
     <FormNumeric Label="@L["field.unitPrice"]" Name="UnitPrice" TNumber="decimal?"
                  @bind-Value="_model.UnitPrice" Error="@ErrorFor("UnitPrice")" />

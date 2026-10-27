@@ -7,6 +7,8 @@
     <RadzenDropDown TValue="TValue" Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged"
                     Data="@Data" TextProperty="@TextProperty" ValueProperty="@ValueProperty"
                     AllowClear="@AllowClear" AllowFiltering="true"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    LoadData="@LoadData"
                     Placeholder="@(Placeholder ?? L["common.optional"])" Disabled="@Disabled" />
     @if (Required)
     {
@@ -19,6 +21,12 @@
     [Parameter, EditorRequired] public string TextProperty { get; set; } = "";
     [Parameter, EditorRequired] public string ValueProperty { get; set; } = "";
     [Parameter] public bool AllowClear { get; set; } = true;
+
+    /// <summary>
+    /// Opsional. Kalau diisi, pencarian dropdown dikirim ke sini (args.Filter) dan
+    /// pemanggil mengisi ulang Data dari API — bukan filter lokal atas data yang sudah dimuat.
+    /// </summary>
+    [Parameter] public EventCallback<LoadDataArgs> LoadData { get; set; }
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public bool Required { get; set; }
 }

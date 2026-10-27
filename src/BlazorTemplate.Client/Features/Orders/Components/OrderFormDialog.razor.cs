@@ -3,6 +3,7 @@ using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
 using BlazorTemplate.Shared.Components.Form;
 using Microsoft.AspNetCore.Components;
+using Radzen;
 
 namespace BlazorTemplate.Client.Features.Orders.Components;
 
@@ -47,8 +48,7 @@ public partial class OrderFormDialog : BaseComponent
 
         try
         {
-            // ponytail: lookup dimuat sekali, maks 100 baris (batas backend). Customer Northwind
-            // 91 baris; ganti ke endpoint lookup khusus kalau melewati 100.
+            // Daftar awal untuk menampilkan nilai terpilih; pencarian dropdown memakai LoadXxxAsync.
             _customers = (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 100)).Items.ToList();
             _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 100)).Items.ToList();
             _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 100)).Items.ToList();
@@ -58,6 +58,15 @@ public partial class OrderFormDialog : BaseComponent
             _message = ex.Message;
         }
     }
+
+    private async Task LoadCustomersAsync(LoadDataArgs args)
+        => _customers = (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 50, args.Filter)).Items.ToList();
+
+    private async Task LoadEmployeesAsync(LoadDataArgs args)
+        => _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
+
+    private async Task LoadShippersAsync(LoadDataArgs args)
+        => _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 50, args.Filter)).Items.ToList();
 
     private string? ErrorFor(string field)
         => _errors.TryGetValue(field, out var message) ? message : null;
