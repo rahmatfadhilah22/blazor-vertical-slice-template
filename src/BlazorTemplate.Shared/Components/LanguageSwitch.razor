@@ -1,0 +1,18 @@
+@inherits BaseComponent
+@* Pemilih bahasa UI. Sengaja dropdown kecil, bukan halaman pengaturan:
+ * pilihan bahasa hanya dua dan jarang diubah.
+ *
+ * Nilai dropdown sengaja string, bukan enum: Radzen harus mengonversi TValue balik dari
+ * item yang dipilih, dan string menghindari jalur itu sama sekali.
+ *@
+<RadzenDropDown TValue="string" Data="@_names" Value="@Current" AllowClear="false"
+                Style="width:8.5rem"
+                Change="@(value => L.Set(value?.ToString() == _english ? AppLanguage.En : AppLanguage.Id))"
+                InputAttributes="@(new Dictionary<string, object> { { "aria-label", "Language" } })" />
+
+@code {
+    private const string _english = "English";
+    private static readonly string[] _names = ["Indonesia", _english];
+
+    private string Current => L.Language == AppLanguage.En ? _english : "Indonesia";
+}

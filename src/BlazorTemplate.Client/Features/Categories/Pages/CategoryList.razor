@@ -1,7 +1,8 @@
 @page "/"
 @page "/categories"
+@inherits BaseComponent
 
 @* Halaman hanya menyusun komposisi. Semua detail Radzen ada di komponen. *@
-<PageHeader Title="Categories" Subtitle="Master data kategori produk" />
+<PageHeader Title="@L["category.title"]" Subtitle="@L["category.subtitle"]" />
 
 <CategoryGrid />

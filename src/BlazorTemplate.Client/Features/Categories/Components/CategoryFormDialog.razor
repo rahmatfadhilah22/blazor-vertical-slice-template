@@ -1,27 +1,13 @@
 @inherits BaseComponent
-@* Dialog form kategori. Logika ada di CategoryFormDialog.razor.cs. *@
-<RadzenStack Gap="0.75rem">
-    <RadzenTextBox @bind-Value="_input.CategoryName" Placeholder="Nama kategori (maks. 15 karakter)"
-                   Style="width:100%" MaxLength="15" />
-    @if (_errors.TryGetValue("CategoryName", out var nameError))
-    {
-        <FieldError Message="@nameError" />
-    }
+@* Dialog form kategori — hanya field. Kerangka (validasi, grid, footer) ada di FormDialog. *@
+<FormDialog TItem="Category" Data="_model" Columns="2" IsBusy="@Guard.Busy" ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["category.nameLabel"]" Name="CategoryName" Required MaxLength="15"
+                 Placeholder="@L["category.nameHint"]"
+                 @bind-Value="_model.CategoryName"
+                 Error="@ErrorFor("CategoryName")" />
 
-    <RadzenTextArea @bind-Value="_input.Description" Placeholder="Deskripsi (opsional)"
-                    Style="width:100%" Rows="3" />
-    @if (_errors.TryGetValue("Description", out var descError))
-    {
-        <FieldError Message="@descError" />
-    }
-
-    @if (_message is not null)
-    {
-        <FieldError Message="@_message" />
-    }
-
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
-        <Button Text="Batal" Variant="ButtonVariant.Light" Click="@(() => DialogService.Close(false))" />
-        <Button Text="Simpan" Click="@SaveAsync" Disabled="@_saving" />
-    </RadzenStack>
-</RadzenStack>
+    <FormField Label="@L["category.description"]" Error="@ErrorFor("Description")" FullWidth>
+        <RadzenTextArea Name="Description" @bind-Value="_model.Description" Rows="3"
+                        Placeholder="@L["common.optional"]" />
+    </FormField>
+</FormDialog>

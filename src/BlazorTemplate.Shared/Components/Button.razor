@@ -1,5 +1,5 @@
-@* Tombol standar aplikasi.
- *
+@inherits BaseComponent
+@* Tombol standar aplikasi. *
  * Satu-satunya tempat yang tahu RadzenButton. Developer memakai <Button Variant="...">
  * dan tidak perlu mengingat ButtonStyle/ButtonSeverity/Size/Variant/Shade.
  *
@@ -15,7 +15,7 @@
               ButtonType="@ButtonType"
               Disabled="@(Disabled || IsBusy)"
               IsBusy="@IsBusy"
-              BusyText="@BusyText"
+              BusyText="@(BusyText ?? L["common.saving"])"
               Click="@Click"
               class="@Class" />
 
@@ -34,7 +34,7 @@
 
     [Parameter] public bool IsBusy { get; set; }
 
-    [Parameter] public string BusyText { get; set; } = "Menyimpan...";
+    [Parameter] public string? BusyText { get; set; }
 
     [Parameter] public ButtonType ButtonType { get; set; } = ButtonType.Button;
 

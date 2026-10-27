@@ -9,52 +9,49 @@ namespace BlazorTemplate.Client.Features.Categories.Components;
 public partial class CategoryFormDialog : BaseComponent
 {
     [Parameter] public Category? Category { get; set; }
-
+    [Parameter] public DialogGuard Guard { get; set; } = new();
     [Inject] public ApiClient Api { get; set; } = default!;
-
-    private readonly CategoryInput _input = new();
+    private readonly Category _model = new();
     private readonly Dictionary<string, string> _errors = [];
     private string? _message;
-    private bool _saving;
 
     protected override void OnInitialized()
     {
+        // Wajib: BaseComponent memasang langganan perubahan bahasa di sini.
+        base.OnInitialized();
+
         if (Category is null)
             return;
 
-        _input.CategoryId = Category.CategoryID;
-        _input.CategoryName = Category.CategoryName;
-        _input.Description = Category.Description;
-        _input.Picture = Category.Picture;
+        _model.CategoryID = Category.CategoryID;
+        _model.CategoryName = Category.CategoryName;
+        _model.Description = Category.Description;
+        _model.Picture = Category.Picture;
     }
+    private string? ErrorFor(string field)
+        => _errors.TryGetValue(field, out var message) ? message : null;
 
-    private async Task SaveAsync()
+    private async Task SaveAsync(Category model)
     {
-        _errors.Clear();
-        _message = null;
-
-        // Server tetap otoritas; ini hanya umpan balik cepat sebelum request.
-        if (string.IsNullOrWhiteSpace(_input.CategoryName))
-            _errors["CategoryName"] = "Nama kategori wajib diisi.";
-        else if (_input.CategoryName.Length > 15)
-            _errors["CategoryName"] = "Nama kategori maksimal 15 karakter.";
-
-        if (_errors.Count > 0)
+        if (Guard.Busy)
             return;
 
-        _saving = true;
+        _errors.Clear();
+        _message = null;
+        Guard.Busy = true;
         try
         {
-            if (Category is null)
-                await Api.PostAsync<Category>("Categories/Insert", _input);
+            if (model.CategoryID == 0)
+                await Api.PostAsync<Category>("Categories/Insert", model);
             else
-                await Api.PutAsync($"Categories/Update/{_input.CategoryId}", _input);
-
+                await Api.PutAsync($"Categories/Update/{model.CategoryID}", model);
+#if DEBUG
+            await Task.Delay(5000);
+#endif
             DialogService.Close(true);
         }
         catch (ApiException ex)
         {
-            // 400 validasi: server mengirim errors per field.
             _message = ex.Errors.Count > 0 ? null : ex.Message;
             foreach (var (field, messages) in ex.Errors)
                 _errors[field] = string.Join(" ", messages);
@@ -65,7 +62,7 @@ public partial class CategoryFormDialog : BaseComponent
         }
         finally
         {
-            _saving = false;
+            Guard.Busy = false;
         }
     }
 }

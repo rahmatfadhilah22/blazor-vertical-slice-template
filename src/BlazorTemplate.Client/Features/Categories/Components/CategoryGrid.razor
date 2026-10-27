@@ -3,21 +3,21 @@
           TItem="Category"
           AllowSearch
           AllowSelection
-          SearchPlaceholder="Cari nama atau deskripsi..."
+          SearchPlaceholder="@L["category.search"]"
           LoadData="LoadAsync"
           SelectionChanged="StateHasChanged">
     <Toolbar>
-        <Button Text="Tambah" Icon="add" Variant="ButtonVariant.Success" 
+        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Success"
                 Click="@(() => OpenFormAsync(null))" />
-        <Button Text="@(_grid?.SelectedCount is > 0 ? $"Hapus ({_grid.SelectedCount})" : "Hapus")"
+        <Button Text="@DeleteText"
                 Icon="delete" Variant="ButtonVariant.Danger"
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
 
-    <ChildContent>  
-        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="Nama" Width="40%" />
-        <RadzenDataGridColumn TItem="Category" Property="Description" Title="Deskripsi" Width="50%" />
-        <RadzenDataGridColumn TItem="Category" Context="category" Title="Action" Sortable="false"
+    <ChildContent>
+        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="@L["category.name"]" Width="40%" />
+        <RadzenDataGridColumn TItem="Category" Property="Description" Title="@L["category.description"]" Width="50%" />
+        <RadzenDataGridColumn TItem="Category" Context="category" Title="@L["common.action"]" Sortable="false"
                               Filterable="false" Width="10%" TextAlign="TextAlign.Center">
             <Template>
                 <Button Icon="edit" Size="ButtonSize.Small"
@@ -26,3 +26,10 @@
         </RadzenDataGridColumn>
     </ChildContent>
 </DataGrid>
+
+@code {
+    // Label tombol hapus ikut jumlah pilihan; pilihan kosong = teks tanpa angka.
+    private string DeleteText => _grid?.SelectedCount is > 0
+        ? L.Format("common.deleteCount", _grid.SelectedCount)
+        : L["common.delete"];
+}

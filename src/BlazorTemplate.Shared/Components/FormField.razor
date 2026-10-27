@@ -1,0 +1,28 @@
+@* Satu field di dalam FormDialog: label + input + pesan error.
+ *
+ * Label ditulis di sini, bukan lewat RadzenFormField, supaya input apa pun (textbox,
+ * textarea, dropdown) dapat label dan error dengan bentuk yang sama tanpa mengandalkan
+ * floating label — di dalam dialog yang rapat, label mengambang mudah menutupi isi.
+ *
+ * Label membungkus control (bukan for= + id) karena id input dibuat Radzen dan tidak
+ * diketahui di sini; membungkus mengasosiasikan label secara native tanpa id.
+ *@
+<div class="app-form-field @(FullWidth ? "app-form-field-full" : null)">
+    <label class="app-form-label">
+        <span class="app-form-label-text">@Label</span>
+        @ChildContent
+    </label>
+    <FieldError Message="@Error" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+
+    /// <summary>Pesan error untuk field ini; kosong = tidak ada error.</summary>
+    [Parameter] public string? Error { get; set; }
+
+    /// <summary>Selebar baris penuh — untuk textarea / deskripsi panjang.</summary>
+    [Parameter] public bool FullWidth { get; set; }
+
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

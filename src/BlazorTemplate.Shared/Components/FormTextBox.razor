@@ -1,0 +1,37 @@
+@inherits BaseComponent
+@* Satu field teks: label, input, error server, dan validator wajib. Menggantikan
+ * pasangan FormField + RadzenTextBox + RadzenRequiredValidator yang isinya selalu sama.
+ *
+ * Name dipakai Radzen untuk mencocokkan validator dengan input, jadi cukup unik di
+ * dalam satu form. Boleh dikosongkan: label dipakai sebagai name.
+ *
+ * Label dan pesan wajib sengaja lewat Localizer di sisi pemanggil: label adalah nama field
+ * yang ditentukan fitur ("Nama kategori"), bukan teks umum komponen.
+ *@
+<FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
+    <RadzenTextBox Name="@FieldName" @bind-Value="Value" MaxLength="@MaxLength"
+                   Placeholder="@Placeholder" Disabled="@Disabled" />
+    @if (Required)
+    {
+        @* Pesan diambil dari label supaya tidak perlu ditulis ulang di tiap field. *@
+        <RadzenRequiredValidator Component="@FieldName" Text="@L.Format("common.required", Label)" />
+    }
+</FormField>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool FullWidth { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public int? MaxLength { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>Error dari server, tidak memakai validator Radzen.</summary>
+    [Parameter] public string? Error { get; set; }
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private string FieldName => string.IsNullOrWhiteSpace(Name) ? Label : Name;
+}

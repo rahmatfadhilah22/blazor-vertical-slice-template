@@ -24,8 +24,8 @@
         {
             @* Input native + @bind:after: bebas dari ketidakcocokan tipe event komponen.
                rz-textbox = kelas CSS Radzen, jadi tampilannya tetap konsisten. *@
-            <input type="text" class="rz-textbox app-datagrid-search" placeholder="@SearchPlaceholder"
-                   aria-label="@SearchPlaceholder" @bind="_search" @bind:event="oninput"
+            <input type="text" class="rz-textbox app-datagrid-search" placeholder="@SearchText"
+                   aria-label="@SearchText" @bind="_search" @bind:event="oninput"
                    @bind:after="SearchChangedAsync" />
         }
     </div>
@@ -50,12 +50,12 @@
                        false → null → true, jadi klik pertama malah jadi "sebagian". *@
                     <RadzenCheckBox TriState="false" TValue="bool?" Value="@SelectAllState"
                                     Change="@(value => SelectAll(value == true))"
-                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", "Pilih semua di halaman ini" } })" />
+                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", L["grid.selectAll"] } })" />
                 </HeaderTemplate>
                 <Template Context="item">
                     <RadzenCheckBox TValue="bool" Value="@_selected.Contains(item)"
                                     Change="@(value => Toggle(item, value))"
-                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", "Pilih baris" } })" />
+                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", L["grid.selectRow"] } })" />
                 </Template>
             </RadzenDataGridColumn>
         }
@@ -67,7 +67,7 @@
         @if (_error is not null)
         {
             <EmptyState Message="@_error" Icon="error_outline">
-                <Button Text="Coba lagi" Size="ButtonSize.Small" Click="@(() => ReloadAsync())" />
+                <Button Text="@L["common.retry"]" Size="ButtonSize.Small" Click="@(() => ReloadAsync())" />
             </EmptyState>
         }
         else if (EmptyTemplate is not null)
@@ -76,7 +76,7 @@
         }
         else
         {
-            <EmptyState Message="Belum ada data." Icon="inbox" />
+            <EmptyState Icon="inbox" />
         }
     </EmptyTemplate>
     <LoadingTemplate>

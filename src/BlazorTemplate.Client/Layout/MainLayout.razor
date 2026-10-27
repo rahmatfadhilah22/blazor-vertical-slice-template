@@ -1,13 +1,19 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject Localizer L
 
 <RadzenTheme Theme="material" />
 <RadzenComponents />
 
 <RadzenLayout>
     <RadzenHeader>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-py-2">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-py-2 rz-w-100">
             <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)" />
             <RadzenText TextStyle="TextStyle.H6" Class="rz-mb-0">BlazorTemplate</RadzenText>
+            @* Bahasa: dropdown didorong ke kanan header. *@
+            <div class="rz-ml-auto">
+                <LanguageSwitch />
+            </div>
         </RadzenStack>
     </RadzenHeader>
 
@@ -15,8 +21,8 @@
         @* Padding atas disamakan dengan padding bawaan RadzenBody (1rem) agar menu sejajar dengan konten. *@
         <div class="rz-pt-4">
             <RadzenPanelMenu>
-                <RadzenPanelMenuItem Text="Master Data" Icon="folder" Expanded="true">
-                    <RadzenPanelMenuItem Text="Categories" Icon="category" Path="categories" />
+                <RadzenPanelMenuItem Text="@L["menu.masterData"]" Icon="folder" Expanded="true">
+                    <RadzenPanelMenuItem Text="@L["menu.categories"]" Icon="category" Path="categories" />
                 </RadzenPanelMenuItem>
             </RadzenPanelMenu>
         </div>
@@ -30,4 +36,10 @@
 
 @code {
     private bool _sidebarExpanded = true;
+
+    // Layout tidak mewarisi BaseComponent (harus LayoutComponentBase), jadi langganan
+    // perubahan bahasa dipasang manual di sini.
+    protected override void OnInitialized() => L.Changed += StateHasChanged;
+
+    public void Dispose() => L.Changed -= StateHasChanged;
 }

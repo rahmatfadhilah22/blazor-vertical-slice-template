@@ -1,0 +1,59 @@
+@* Kerangka standar dialog insert/update.
+ *
+ * Yang dimiliki komponen ini: RadzenTemplateForm (validasi field lewat
+ * RadzenRequiredValidator dkk.), grid field N kolom yang otomatis turun baris,
+ * pesan error umum, dan footer Batal/Simpan. Isi field tetap ditulis pemakai
+ * sebagai <FormField> — tidak ada schema/reflection.
+ *
+ * TItem tidak bisa disimpulkan Razor, jadi pemakai menulis TItem="Category" sekaligus
+ * Data="@model".
+ * Lebar dialog tidak diatur di sini: Radzen hanya membaca lebar dari DialogOptions,
+ * jadi pemanggil memakai DialogSize.WidthFor(Columns) saat memanggil OpenAsync.
+ *@
+@typeparam TItem where TItem : class
+@inherits BaseComponent
+
+@* Form dibiarkan tanpa class; wrapper div di dalamnya yang mengatur layout. *@
+<RadzenTemplateForm TItem="TItem" Data="@Data" Submit="@Submit">
+    <div class="app-form">
+        <div class="app-form-grid" style="--app-form-columns:@Columns">
+            @ChildContent
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <FieldError Message="@ErrorMessage" />
+        }
+
+        <div class="app-form-actions">
+            <Button Text="@(CancelText ?? L["common.cancel"])" Variant="ButtonVariant.Light" Disabled="@IsBusy"
+                    Click="@(() => DialogService.Close(false))" />
+            @* Submit: validasi Radzen jalan dulu; callback hanya dipanggil kalau semua valid. *@
+            <Button Text="@(SubmitText ?? L["common.save"])" Icon="@SubmitIcon" ButtonType="ButtonType.Submit" IsBusy="@IsBusy" />
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    /// <summary>Model yang divalidasi dan diedit.</summary>
+    [Parameter, EditorRequired] public TItem Data { get; set; } = default!;
+
+    /// <summary>Jumlah field per baris. 3 cocok untuk master data yang field-nya banyak.</summary>
+    [Parameter] public int Columns { get; set; } = 3;
+
+    /// <summary>Dipanggil hanya kalau semua validator lolos. Dialog tetap terbuka sampai pemakai memanggil DialogService.Close.</summary>
+    [Parameter, EditorRequired] public EventCallback<TItem> Submit { get; set; }
+
+    /// <summary>Menonaktifkan tombol selama request berjalan.</summary>
+    [Parameter] public bool IsBusy { get; set; }
+
+    /// <summary>Error yang tidak terikat ke satu field (mis. gagal koneksi, 500).</summary>
+    [Parameter] public string? ErrorMessage { get; set; }
+
+    /// <summary>Label tombol. Null = teks dari <see cref="Localizer"/>.</summary>
+    [Parameter] public string? SubmitText { get; set; }
+    [Parameter] public string? SubmitIcon { get; set; }
+    [Parameter] public string? CancelText { get; set; }
+
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

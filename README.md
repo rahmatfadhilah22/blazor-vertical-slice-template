@@ -61,8 +61,8 @@ Base URL: `http://localhost:5207`
 |---|---|---|---|
 | GET | `/api/Categories/GetRows?page=1&pageSize=10&search=tea` | — | 200 `PagedResult<Category>` |
 | GET | `/api/Categories/GetRow/{id}` | — | 200 Category, 404 jika tidak ada |
-| POST | `/api/Categories/Insert` | CategoryInput (JSON) | 201 Category |
-| PUT | `/api/Categories/Update/{id}` | CategoryInput (JSON) | 204, 404 jika tidak ada |
+| POST | `/api/Categories/Insert` | `SaveCategoryRequest` | 201 Category |
+| PUT | `/api/Categories/Update/{id}` | `SaveCategoryRequest` | 204, 404 jika tidak ada |
 | DELETE | `/api/Categories/Delete` | `int[]` (JSON body, mis. `[1,2]`) | 204; 404 jika ada id tidak ditemukan (tidak ada yang dihapus) |
 
 ```jsonc
@@ -72,7 +72,8 @@ Base URL: `http://localhost:5207`
 // Category
 { "categoryID": 1, "categoryName": "Beverages", "description": "Soft drinks", "picture": "" }
 
-// CategoryInput — categoryId 0 pada insert = server yang menentukan id
+// SaveCategoryRequest (body Insert/Update) — categoryId 0 = server menentukan id.
+// Bentuk body sama dengan Category, jadi klien memakai model Category untuk keduanya.
 { "categoryId": 0, "categoryName": "Snacks", "description": "Chips", "picture": null }
 ```
 
@@ -105,8 +106,15 @@ src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas 
   Components/FieldError.razor           pesan error di bawah field
   Components/DataGrid.razor(+.cs)       grid server-side (parameter inti saja)
   Components/DataGridLoadArgs.cs        DataGridLoadArgs (Page/PageSize/Search) + DataGridPage (Items/Total)
+  Components/FormDialog.razor           kerangka dialog insert/update: validasi, grid field, footer
+  Components/FormField.razor            label + input + error untuk satu field
+  Components/FormTextBox.razor          FormField + RadzenTextBox + validator wajib
+  Components/DialogSize.cs              lebar dialog dari jumlah kolom (bukan static di FormDialog: generic)
+  Components/DialogGuard.cs             status simpan bersama untuk DialogOptions.CanClose
+  Components/LanguageSwitch.razor       dropdown pemilih bahasa di header
+  Localization/Localizer.cs             teks UI per bahasa + event Changed
 src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
-  Models/                               Category, PagedResult, CategoryInput
+  Models/                               Category, PagedResult
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
   Features/Categories/Pages/            CategoryListPage — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
@@ -179,6 +187,75 @@ Alasan memilih halaman untuk transaksi:
 Pola dokumen: daftar → klik baris → `/sales/{id}`. Setelah simpan **tetap di halaman itu** (bukan kembali ke daftar), karena setelah header biasanya langsung isi item.
 
 Konsekuensi: `CategoryFormDialog` tetap modal. Jangan menambah parameter "buka halaman" ke `DataGrid` — form halaman adalah komponen + route tersendiri.
+
+> **`OpenAsync<T>` mengembalikan `Task<dynamic>`.** Kalau hasilnya ditampung `var`, nilainya bertipe `dynamic`: menutup dialog lewat X atau Escape menghasilkan `null`, dan `if (saved)` pada `dynamic` null melempar `RuntimeBinderException: ValueCantBeNull` (tombol Batal aman karena mengirim `false`). Selalu tulis `object? saved = await ...` lalu `if (saved is true)`. `DialogService.Confirm` tidak kena masalah ini — ia benar-benar `Task<bool>`.
+
+### FormDialog: kerangka form insert/update
+
+Dialog master data tidak menulis ulang validasi, footer tombol, dan pesan error. Isinya hanya field:
+
+```razor
+<FormDialog TItem="Category" Data="_model" Columns="2" IsBusy="@Guard.Busy"
+            ErrorMessage="@_message" Submit="SaveAsync">
+    <FormTextBox Label="@L["category.nameLabel"]" Name="CategoryName" Required MaxLength="15"
+                 Placeholder="@L["category.nameHint"]"
+                 @bind-Value="_model.CategoryName"
+                 Error="@ErrorFor("CategoryName")" />
+    <FormField Label="@L["category.description"]" Error="@ErrorFor("Description")" FullWidth>
+        <RadzenTextArea Name="Description" @bind-Value="_model.Description" Rows="3" />
+    </FormField>
+</FormDialog>
+```
+
+- `FormTextBox` = `FormField` + `RadzenTextBox` + `RadzenRequiredValidator` dalam satu komponen. Pesan wajibnya dibuat dari label ("Nama kategori wajib diisi."), jadi tidak ditulis ulang tiap field. `Name` opsional — kalau kosong, label dipakai sebagai nama untuk dicocokkan validator. Untuk input selain teks (textarea, dropdown, numeric, date), tetap pakai `FormField` dan validator Radzen sendiri.
+- Atribut `Required` hanya memasang validator di klien. Kolom yang wajib di database tetap harus `[Required]` di request server; dua-duanya perlu.
+
+- `Columns` = jumlah field per baris. Field berikutnya otomatis turun ke baris baru; `FullWidth` membuat field selebar baris (textarea). Di bawah 640px grid jadi 1 kolom.
+- `Data` adalah model yang diedit; `TItem` disimpulkan dari situ (di markup Razor `TItem="Category"` tetap perlu ditulis).
+- **Validasi klien pakai validator Radzen**, bukan `if` di code-behind: `RadzenRequiredValidator`, `RadzenLengthValidator`, `RadzenNumericRangeValidator`, `RadzenRegexValidator`. Input wajib punya `Name="..."` dan validator menunjuk ke nama itu lewat `Component`. Tombol Simpan bertipe `submit`, dan `Submit` hanya dipanggil kalau semua validator lolos — jadi `SaveAsync` tidak perlu memeriksa field lagi.
+- Validasi server tetap otoritas dan hasilnya masuk ke `FormField.Error` lewat `ErrorFor("FieldName")`. Nama field mengikuti properti model (`CategoryName`), sama dengan `errors` di respons 400.
+- `FormDialog` **tidak** bisa mengatur lebar dialognya sendiri — Radzen hanya membaca lebar dari `DialogOptions`. Pemanggil memakai `DialogSize.WidthFor(columns)` supaya lebarnya sinkron dengan `Columns`:
+
+```csharp
+object? saved = await DialogService.OpenAsync<CategoryFormDialog>(title, parameters,
+    new DialogOptions { Width = DialogSize.WidthFor(2) });
+```
+
+- **X / Escape / klik overlay ditutup lewat `DialogGuard`.** `DialogOptions.CanClose` (tipe `Func<Task<bool>>`) ditahan selama request berjalan; tanpa itu dialog bisa ditutup di tengah simpan, hasilnya hilang dan grid tidak reload. `DialogGuard` ada karena opsi dibuat di grid sementara status simpan ada di dalam dialog — objek kecil yang sama diberikan ke keduanya lewat parameter.
+
+- `Submit` tidak menutup dialog; pemakai memanggil `DialogService.Close(...)` sendiri setelah sukses. Dengan begitu dialog tetap terbuka saat validasi server gagal.
+- `ErrorMessage` untuk error yang tidak terikat field (mis. koneksi putus); error per field lewat `FormField.Error`.
+- `FormField` menulis labelnya sendiri dan membungkus input di `<label>`, jadi label terasosiasi tanpa perlu id. Jangan pakai `RadzenFormField` di sini — label mengambangnya menutupi isi di dialog yang rapat.
+- `DialogSize` terpisah dari `FormDialog` karena `FormDialog` generik: static method di kelas generik harus dipanggil dengan argumen tipe (`FormDialog<Category>.WidthFor(2)`) di setiap tempat.
+
+#### Satu model, bukan dua
+
+`CategoryInput` sudah dihapus. `SaveCategoryRequest` di backend berbentuk sama dengan `Category` (`categoryId`, `categoryName`, `description`, `picture`), jadi form memakai `Category` untuk tampilan **dan** body request. `categoryId == 0` berarti insert. Buat model terpisah hanya kalau body request benar-benar berbeda dari respons (mis. ada password atau field yang tidak boleh dibaca balik).
+
+### Multi language
+
+Hanya **teks tetap milik UI** yang diterjemahkan: menu, judul halaman, judul kolom, tombol, placeholder, dan pesan validasi. Isi data dari server (nama kategori, deskripsi) tampil apa adanya.
+
+`Localizer` (`src/BlazorTemplate.Shared/Localization/Localizer.cs`) adalah satu dictionary per bahasa. Tidak memakai `.resx` + `IStringLocalizer`: di WASM resx menambah satelit assembly ke build dan boot manifest, sementara yang perlu diterjemahkan hanya puluhan label.
+
+```razor
+@inherits BaseComponent          @* L tersedia dari sini *@
+
+<PageHeader Title="@L["category.title"]" />
+<Button Text="@L["common.add"]" />
+<FormTextBox Label="@L["category.nameLabel"]" Required ... />
+```
+
+```csharp
+L.Format("common.required", L["category.nameLabel"]);   // "Nama kategori wajib diisi."
+```
+
+- `L["kunci"]` mengembalikan **kunci itu sendiri** kalau tidak ada di dictionary — salah ketik langsung terlihat di layar, bukan kosong.
+- `Localizer` didaftarkan `AddSingleton` di `Program.cs`; bahasa adalah state global. Komponen turunan `BaseComponent` otomatis render ulang saat bahasa berganti (langganan dipasang di `BaseComponent.OnInitialized`).
+- **Kalau meng-override `OnInitialized`, panggil `base.OnInitialized()`.** Tanpa itu komponen tidak ikut berganti bahasa sampai di-render ulang oleh hal lain.
+- Layout (`MainLayout`) memakai `LayoutComponentBase`, bukan `BaseComponent`, jadi ia memasang langganan sendiri; `Routes` dan `CategoryList` cukup `@inherits BaseComponent`.
+- Teks default komponen shared (`SearchPlaceholder`, `SubmitText`, `CancelText`, `BusyText`, `EmptyState.Message`) sekarang nullable: null = ambil dari `Localizer`. Isi eksplisit hanya kalau teksnya khusus fitur.
+- Menambah bahasa = menambah satu dictionary di `Localizer` + satu entri di `LanguageSwitch`. Belum ada persistensi (pilihan bahasa hilang saat refresh) dan belum ada `CultureInfo`/format tanggal per bahasa — tambahkan saat ada tanggal atau angka yang ditampilkan.
 
 ### Aturan komponen shared
 
@@ -278,6 +355,12 @@ Yang perlu diingat saat mengubah tampilan:
 | `EmptyState` | kondisi kosong / gagal muat, center | `Message`, `Icon`, `ChildContent` (mis. tombol "Coba lagi") |
 | `FieldError` | pesan error di bawah field form | `Message` |
 | `DataGrid<TItem>` | grid server-side: pemakai hanya menyuplai `LoadData` + kolom; baris, total, halaman, ukuran halaman, pencarian, loading, pilihan baris, dan error diurus grid | `LoadData` (lambda → `DataGridPage<T>`), `PageSize`, `PageSizeOptions`, `AllowSearch`, `SearchPlaceholder`, `AllowSelection`, `SelectionChanged`, `Toolbar`, `EmptyTemplate`; `SelectedItems`, `SelectedCount`, `ReloadAsync(firstPage)` |
+| `FormDialog<TItem>` | kerangka dialog insert/update: validasi Radzen, grid field otomatis turun baris, error umum, footer Batal/Simpan | `TItem`, `Data`, `Columns`, `Submit`, `IsBusy`, `ErrorMessage`, `SubmitText`, `CancelText` |
+| `FormField` | label + input + pesan error satu field | `Label`, `Error`, `FullWidth` |
+| `FormTextBox` | `FormField` + `RadzenTextBox` + validator wajib; pesan wajib dari label | `Label`, `Name` (opsional), `Required`, `MaxLength`, `Placeholder`, `Disabled`, `Value`/`ValueChanged`, `Error`, `FullWidth` |
+| `DialogGuard` | status simpan bersama antara dialog dan `DialogOptions.CanClose`, supaya X/Escape/overlay tidak menutup dialog saat request jalan | `Busy` |
+| `LanguageSwitch` | dropdown bahasa di header (Indonesia / English) | — |
+| `DialogSize` | lebar dialog dari jumlah kolom, untuk `DialogOptions.Width` | `WidthFor(columns)` |
 
 `BlazorTemplate.Shared` **hanya** berisi komponen yang sudah dipakai minimal dua tempat, **kecuali** `DataGrid`. Grid dibungkus bukan untuk menyembunyikan Radzen, melainkan supaya pemakaian grid selalu server-side dan seragam.
 

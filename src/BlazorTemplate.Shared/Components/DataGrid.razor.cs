@@ -27,7 +27,10 @@ public partial class DataGrid<TItem> : BaseComponent where TItem : notnull
 
     [Parameter] public bool AllowSearch { get; set; }
 
-    [Parameter] public string SearchPlaceholder { get; set; } = "Cari...";
+    /// <summary>Placeholder pencarian. Null = teks umum dari <see cref="Localizer"/>.</summary>
+    [Parameter] public string? SearchPlaceholder { get; set; }
+
+    private string SearchText => SearchPlaceholder ?? L["common.search"];
 
     /// <summary>Menampilkan kolom checkbox + checkbox pilih-semua di header.</summary>
     [Parameter] public bool AllowSelection { get; set; }
@@ -64,7 +67,12 @@ public partial class DataGrid<TItem> : BaseComponent where TItem : notnull
         }
     }
 
-    protected override void OnInitialized() => _pageSize = PageSize;
+    protected override void OnInitialized()
+    {
+        // Wajib: BaseComponent memasang langganan perubahan bahasa di sini.
+        base.OnInitialized();
+        _pageSize = PageSize;
+    }
 
     // Grid tidak selalu memanggil LoadData sendiri saat render pertama ketika dibungkus
     // komponen lain. Kick eksplisit di sini; kalau Radzen ternyata sudah memanggil, _loaded
@@ -103,7 +111,7 @@ public partial class DataGrid<TItem> : BaseComponent where TItem : notnull
             _rows = [];
             _count = 0;
             _error = ex.Message;
-            NotificationService.Notify(NotificationSeverity.Error, "Gagal memuat data", ex.Message);
+            NotificationService.Notify(NotificationSeverity.Error, L["grid.loadFailed"], ex.Message);
         }
         finally
         {
