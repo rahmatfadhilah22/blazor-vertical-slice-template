@@ -34,6 +34,11 @@
     </RadzenBody>
 </RadzenLayout>
 
+@* Hanya build Debug: tidak ada di Release, jadi tidak ikut terkirim ke pengguna. *@
+#if DEBUG
+<DevInspector />
+#endif
+
 @code {
     private bool _sidebarExpanded = true;
 

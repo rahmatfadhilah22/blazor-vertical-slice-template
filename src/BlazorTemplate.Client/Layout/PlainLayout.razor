@@ -19,3 +19,8 @@
         @Body
     </main>
 </div>
+
+@* Ikut di 404: halaman itu justru sering dibuka karena route salah ketik. *@
+#if DEBUG
+<DevInspector />
+#endif

@@ -122,6 +122,7 @@ src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Layout/PlainLayout.razor              kerangka tanpa menu, untuk halaman 404
   Routes.razor                          router + halaman NotFound
   PageNotFound.razor                    halaman 404 (di dalam PlainLayout)
+  DevTools/DevInspector.razor           panel DEBUG: daftar route + komponen + path file
 src/BlazorTemplate.Client.App/       Blazor WASM host
   Program.cs                            registrasi service + HttpClient + base URL
   LoggingHandler.cs                     log semua request/response ke console browser
@@ -309,7 +310,16 @@ private async Task<DataGridPage<Category>> LoadAsync(DataGridLoadArgs args)
 
 Semua request/response tercatat di **console browser** (F12), bukan terminal — aplikasi jalan di WASM, tidak ada server di belakangnya. Format: `--> GET url`, `<-- 200 url`, `<-- 500 url` + body error.
 
-Kalau halaman blank tanpa pesan: cek tab Console untuk 404 `_framework/*` atau kegagalan integrity check — itu tanda server jalan dengan asset build lama (lihat catatan restart di atas).
+Kalau halaman blank tanpa pesan: cek tab Console untuk 404 `_framework/*` atau kegagalan integritas — itu tanda server jalan dengan asset build lama (lihat catatan restart di atas).
+
+#### DevInspector: route ini ada di file mana?
+
+Di build **Debug** ada tombol bulat `</>` di pojok kanan bawah (juga di halaman 404). Klik → panel berisi semua halaman (route + nama) dan komponen `.razor` beserta path-nya, plus pencarian dan tanda baris untuk route yang sedang dibuka. Klik baris menyalin path-nya.
+
+- Path **diturunkan dari namespace** (`BlazorTemplate.Client.Features.Categories.Pages` → `src/BlazorTemplate.Client/Features/Categories/Pages/`). Kalau namespace sebuah file tidak sesuai foldernya, baris itu menunjuk path salah — perbaiki namespace-nya.
+- Daftarnya dibaca sekali lewat reflection (`typeof(CategoryGrid).Assembly` + `typeof(Button).Assembly`). Komponen baru otomatis muncul tanpa registrasi.
+- Tidak menandai elemen DOM, jadi tidak bisa "klik tombol di halaman → lompat ke komponennya". Itu butuh `data-*` manual di setiap komponen; belum dibuat.
+- Tidak ada di Release: pembungkusnya `#if DEBUG` di `MainLayout`/`PlainLayout`, jadi panel ini tidak mungkin ikut terkirim ke pengguna.
 
 ## Tema dan warna
 
