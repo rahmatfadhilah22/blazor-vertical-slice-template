@@ -1,3 +1,4 @@
+using BlazorTemplate.Client.Components;
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
@@ -7,16 +8,12 @@ using Radzen;
 
 namespace BlazorTemplate.Client.Features.Employees.Components;
 
-public partial class EmployeeFormDialog : BaseComponent
+public partial class EmployeeFormDialog : FormDialogBase<Employee>
 {
     [Parameter] public Employee? Employee { get; set; }
-    [Parameter] public DialogGuard Guard { get; set; } = new();
-    [Inject] public ApiClient Api { get; set; } = default!;
 
     private Employee _model = new();
     private List<Employee> _employees = [];
-    private readonly Dictionary<string, string> _errors = [];
-    private string? _message;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,40 +58,5 @@ public partial class EmployeeFormDialog : BaseComponent
     private async Task LoadEmployeesAsync(LoadDataArgs args)
         => _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
 
-    private string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
-
-    private async Task SaveAsync(Employee model)
-    {
-        if (Guard.Busy)
-            return;
-
-        _errors.Clear();
-        _message = null;
-        Guard.Busy = true;
-        try
-        {
-            if (Employee is null)
-                await Api.PostAsync<Employee>("Employees/Insert", model);
-            else
-                await Api.PutAsync($"Employees/Update/{model.EmployeeID}", model);
-
-            DraftStore.Clear<Employee>();
-            DialogService.Close(true);
-        }
-        catch (ApiException ex)
-        {
-            _message = ex.Errors.Count > 0 ? null : ex.Message;
-            foreach (var (field, messages) in ex.Errors)
-                _errors[field] = string.Join(" ", messages);
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            Guard.Busy = false;
-        }
-    }
+    private Task SaveAsync(Employee model) => SubmitAsync(model, "Employees", Employee is null ? null : model.EmployeeID);
 }

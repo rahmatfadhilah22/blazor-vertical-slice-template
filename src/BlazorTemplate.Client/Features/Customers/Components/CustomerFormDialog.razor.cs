@@ -1,3 +1,4 @@
+using BlazorTemplate.Client.Components;
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
@@ -6,15 +7,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazorTemplate.Client.Features.Customers.Components;
 
-public partial class CustomerFormDialog : BaseComponent
+public partial class CustomerFormDialog : FormDialogBase<Customer>
 {
     [Parameter] public Customer? Customer { get; set; }
-    [Parameter] public DialogGuard Guard { get; set; } = new();
-    [Inject] public ApiClient Api { get; set; } = default!;
 
     private Customer _model = new();
-    private readonly Dictionary<string, string> _errors = [];
-    private string? _message;
 
     protected override void OnInitialized()
     {
@@ -40,40 +37,5 @@ public partial class CustomerFormDialog : BaseComponent
             };
     }
 
-    private string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
-
-    private async Task SaveAsync(Customer model)
-    {
-        if (Guard.Busy)
-            return;
-
-        _errors.Clear();
-        _message = null;
-        Guard.Busy = true;
-        try
-        {
-            if (Customer is null)
-                await Api.PostAsync<Customer>("Customers/Insert", model);
-            else
-                await Api.PutAsync($"Customers/Update/{model.CustomerID}", model);
-
-            DraftStore.Clear<Customer>();
-            DialogService.Close(true);
-        }
-        catch (ApiException ex)
-        {
-            _message = ex.Errors.Count > 0 ? null : ex.Message;
-            foreach (var (field, messages) in ex.Errors)
-                _errors[field] = string.Join(" ", messages);
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            Guard.Busy = false;
-        }
-    }
+    private Task SaveAsync(Customer model) => SubmitAsync(model, "Customers", Customer is null ? null : model.CustomerID);
 }

@@ -1,3 +1,4 @@
+using BlazorTemplate.Client.Components;
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
@@ -7,18 +8,14 @@ using Radzen;
 
 namespace BlazorTemplate.Client.Features.Orders.Components;
 
-public partial class OrderFormDialog : BaseComponent
+public partial class OrderFormDialog : FormDialogBase<Order>
 {
     [Parameter] public Order? Order { get; set; }
-    [Parameter] public DialogGuard Guard { get; set; } = new();
-    [Inject] public ApiClient Api { get; set; } = default!;
 
     private Order _model = new();
     private List<Customer> _customers = [];
     private List<Employee> _employees = [];
     private List<Shipper> _shippers = [];
-    private readonly Dictionary<string, string> _errors = [];
-    private string? _message;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,40 +65,5 @@ public partial class OrderFormDialog : BaseComponent
     private async Task LoadShippersAsync(LoadDataArgs args)
         => _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 50, args.Filter)).Items.ToList();
 
-    private string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
-
-    private async Task SaveAsync(Order model)
-    {
-        if (Guard.Busy)
-            return;
-
-        _errors.Clear();
-        _message = null;
-        Guard.Busy = true;
-        try
-        {
-            if (Order is null)
-                await Api.PostAsync<Order>("Orders/Insert", model);
-            else
-                await Api.PutAsync($"Orders/Update/{model.OrderID}", model);
-
-            DraftStore.Clear<Order>();
-            DialogService.Close(true);
-        }
-        catch (ApiException ex)
-        {
-            _message = ex.Errors.Count > 0 ? null : ex.Message;
-            foreach (var (field, messages) in ex.Errors)
-                _errors[field] = string.Join(" ", messages);
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            Guard.Busy = false;
-        }
-    }
+    private Task SaveAsync(Order model) => SubmitAsync(model, "Orders", Order is null ? null : model.OrderID);
 }

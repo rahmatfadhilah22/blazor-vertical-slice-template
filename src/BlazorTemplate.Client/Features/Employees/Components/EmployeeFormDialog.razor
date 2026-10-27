@@ -1,4 +1,4 @@
-@inherits BaseComponent
+@inherits FormDialogBase<Employee>
 <FormDialog TItem="Employee" Data="_model" Columns="2" IsBusy="@Guard.Busy"
             ErrorMessage="@_message" Submit="SaveAsync">
     <FormTextBox Label="@L["field.firstName"]" Name="FirstName" Required MaxLength="10"

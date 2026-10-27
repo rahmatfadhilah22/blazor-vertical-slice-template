@@ -1,4 +1,4 @@
-@inherits BaseComponent
+@inherits FormDialogBase<Category>
 @* Dialog form kategori — hanya field. Kerangka (validasi, grid, footer) ada di FormDialog. *@
 <FormDialog TItem="Category" Data="_model" Columns="2" IsBusy="@Guard.Busy" ErrorMessage="@_message" Submit="SaveAsync">
     <FormTextBox Label="@L["category.nameLabel"]" Name="CategoryName" Required MaxLength="15"

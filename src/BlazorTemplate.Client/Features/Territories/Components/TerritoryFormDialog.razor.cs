@@ -1,3 +1,4 @@
+using BlazorTemplate.Client.Components;
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
@@ -7,16 +8,12 @@ using Radzen;
 
 namespace BlazorTemplate.Client.Features.Territories.Components;
 
-public partial class TerritoryFormDialog : BaseComponent
+public partial class TerritoryFormDialog : FormDialogBase<Territory>
 {
     [Parameter] public Territory? Territory { get; set; }
-    [Parameter] public DialogGuard Guard { get; set; } = new();
-    [Inject] public ApiClient Api { get; set; } = default!;
 
     private Territory _model = new();
     private List<Region> _regions = [];
-    private readonly Dictionary<string, string> _errors = [];
-    private string? _message;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,40 +45,5 @@ public partial class TerritoryFormDialog : BaseComponent
     private async Task LoadRegionsAsync(LoadDataArgs args)
         => _regions = (await Api.GetPagedAsync<Region>("Regions/GetRows", 1, 50, args.Filter)).Items.ToList();
 
-    private string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
-
-    private async Task SaveAsync(Territory model)
-    {
-        if (Guard.Busy)
-            return;
-
-        _errors.Clear();
-        _message = null;
-        Guard.Busy = true;
-        try
-        {
-            if (Territory is null)
-                await Api.PostAsync<Territory>("Territories/Insert", model);
-            else
-                await Api.PutAsync($"Territories/Update/{model.TerritoryID}", model);
-
-            DraftStore.Clear<Territory>();
-            DialogService.Close(true);
-        }
-        catch (ApiException ex)
-        {
-            _message = ex.Errors.Count > 0 ? null : ex.Message;
-            foreach (var (field, messages) in ex.Errors)
-                _errors[field] = string.Join(" ", messages);
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            Guard.Busy = false;
-        }
-    }
+    private Task SaveAsync(Territory model) => SubmitAsync(model, "Territories", Territory is null ? null : model.TerritoryID);
 }

@@ -1,3 +1,4 @@
+using BlazorTemplate.Client.Components;
 using BlazorTemplate.Client.Models;
 using BlazorTemplate.Client.Services;
 using BlazorTemplate.Shared.Components;
@@ -6,15 +7,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazorTemplate.Client.Features.Shippers.Components;
 
-public partial class ShipperFormDialog : BaseComponent
+public partial class ShipperFormDialog : FormDialogBase<Shipper>
 {
     [Parameter] public Shipper? Shipper { get; set; }
-    [Parameter] public DialogGuard Guard { get; set; } = new();
-    [Inject] public ApiClient Api { get; set; } = default!;
 
     private Shipper _model = new();
-    private readonly Dictionary<string, string> _errors = [];
-    private string? _message;
 
     protected override void OnInitialized()
     {
@@ -32,40 +29,5 @@ public partial class ShipperFormDialog : BaseComponent
             };
     }
 
-    private string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
-
-    private async Task SaveAsync(Shipper model)
-    {
-        if (Guard.Busy)
-            return;
-
-        _errors.Clear();
-        _message = null;
-        Guard.Busy = true;
-        try
-        {
-            if (Shipper is null)
-                await Api.PostAsync<Shipper>("Shippers/Insert", model);
-            else
-                await Api.PutAsync($"Shippers/Update/{model.ShipperID}", model);
-
-            DraftStore.Clear<Shipper>();
-            DialogService.Close(true);
-        }
-        catch (ApiException ex)
-        {
-            _message = ex.Errors.Count > 0 ? null : ex.Message;
-            foreach (var (field, messages) in ex.Errors)
-                _errors[field] = string.Join(" ", messages);
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            Guard.Busy = false;
-        }
-    }
+    private Task SaveAsync(Shipper model) => SubmitAsync(model, "Shippers", Shipper is null ? null : model.ShipperID);
 }
