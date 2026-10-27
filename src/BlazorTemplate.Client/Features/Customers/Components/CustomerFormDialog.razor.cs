@@ -20,6 +20,9 @@ public partial class CustomerFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (Customer is null)
+            _model = DraftStore.GetOrCreate<Customer>();
+
         if (Customer is not null)
             _model = new Customer
             {
@@ -55,6 +58,7 @@ public partial class CustomerFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Customers/Update/{model.CustomerID}", model);
 
+            DraftStore.Clear<Customer>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

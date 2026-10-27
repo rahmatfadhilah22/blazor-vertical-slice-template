@@ -1,7 +1,7 @@
 @inherits FormInputBase<string>
 @* Textarea berlabel + error + validator wajib, pasangan FormField + RadzenTextArea. *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenTextArea Name="@FieldName" @bind-Value="Value" MaxLength="@MaxLength" Rows="@Rows"
+    <RadzenTextArea Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged" MaxLength="@MaxLength" Rows="@Rows"
                     Placeholder="@Placeholder" Disabled="@Disabled" />
     @if (Required)
     {

@@ -1,10 +1,10 @@
 @inherits BaseComponent
 <FormDialog TItem="Employee" Data="_model" Columns="2" IsBusy="@Guard.Busy"
             ErrorMessage="@_message" Submit="SaveAsync">
-    <FormTextBox Label="@L["field.lastName"]" Name="LastName" Required MaxLength="20"
-                 @bind-Value="_model.LastName" Error="@ErrorFor("LastName")" />
     <FormTextBox Label="@L["field.firstName"]" Name="FirstName" Required MaxLength="10"
                  @bind-Value="_model.FirstName" Error="@ErrorFor("FirstName")" />
+    <FormTextBox Label="@L["field.lastName"]" Name="LastName" Required MaxLength="20"
+                 @bind-Value="_model.LastName" Error="@ErrorFor("LastName")" />
     <FormTextBox Label="@L["field.title"]" Name="Title" MaxLength="30"
                  @bind-Value="_model.Title" Error="@ErrorFor("Title")" />
     <FormTextBox Label="@L["field.titleOfCourtesy"]" Name="TitleOfCourtesy" MaxLength="25"

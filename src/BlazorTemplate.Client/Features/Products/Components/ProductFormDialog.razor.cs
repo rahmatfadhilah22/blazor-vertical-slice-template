@@ -22,6 +22,9 @@ public partial class ProductFormDialog : BaseComponent
     {
         await base.OnInitializedAsync();
 
+        if (Product is null)
+            _model = DraftStore.GetOrCreate<Product>();
+
         if (Product is not null)
             _model = new Product
             {
@@ -68,6 +71,7 @@ public partial class ProductFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Products/Update/{model.ProductID}", model);
 
+            DraftStore.Clear<Product>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

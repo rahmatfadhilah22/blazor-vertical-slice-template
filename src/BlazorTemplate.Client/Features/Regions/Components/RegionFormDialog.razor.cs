@@ -20,6 +20,9 @@ public partial class RegionFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (Region is null)
+            _model = DraftStore.GetOrCreate<Region>();
+
         if (Region is not null)
             _model = new Region { RegionID = Region.RegionID, RegionDescription = Region.RegionDescription };
     }
@@ -42,6 +45,7 @@ public partial class RegionFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Regions/Update/{model.RegionID}", model);
 
+            DraftStore.Clear<Region>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

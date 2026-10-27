@@ -20,6 +20,9 @@ public partial class SupplierFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (Supplier is null)
+            _model = DraftStore.GetOrCreate<Supplier>();
+
         if (Supplier is not null)
             _model = new Supplier
             {
@@ -56,6 +59,7 @@ public partial class SupplierFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Suppliers/Update/{model.SupplierID}", model);
 
+            DraftStore.Clear<Supplier>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

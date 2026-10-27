@@ -20,6 +20,9 @@ public partial class ShipperFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (Shipper is null)
+            _model = DraftStore.GetOrCreate<Shipper>();
+
         if (Shipper is not null)
             _model = new Shipper
             {
@@ -47,6 +50,7 @@ public partial class ShipperFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Shippers/Update/{model.ShipperID}", model);
 
+            DraftStore.Clear<Shipper>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

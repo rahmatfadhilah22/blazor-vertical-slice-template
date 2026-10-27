@@ -2,7 +2,7 @@
 @inherits FormInputBase<TNumber>
 @* Input angka berlabel + error + validator wajib. TNumber = tipe nilainya, mis. decimal / int. *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenNumeric TValue="TNumber" Name="@FieldName" @bind-Value="Value" Disabled="@Disabled" />
+    <RadzenNumeric TValue="TNumber" Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged" Disabled="@Disabled" />
     @if (Required)
     {
         <RadzenRequiredValidator Component="@FieldName" Text="@L.Format("common.required", Label)" />

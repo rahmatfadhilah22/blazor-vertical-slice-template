@@ -20,6 +20,9 @@ public partial class UsStateFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (UsState is null)
+            _model = DraftStore.GetOrCreate<UsState>();
+
         if (UsState is not null)
             _model = new UsState
             {
@@ -48,6 +51,7 @@ public partial class UsStateFormDialog : BaseComponent
             else
                 await Api.PutAsync($"UsStates/Update/{model.StateID}", model);
 
+            DraftStore.Clear<UsState>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

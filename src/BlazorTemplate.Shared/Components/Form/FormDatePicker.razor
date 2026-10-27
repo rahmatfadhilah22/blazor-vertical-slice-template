@@ -3,7 +3,7 @@
 @* Date picker berlabel + error + validator wajib.
    TValue: DateOnly? (dipakai backend ini), DateTime?, atau DateTimeOffset?. *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenDatePicker TValue="TValue" Name="@FieldName" @bind-Value="Value" DateFormat="@DateFormat"
+    <RadzenDatePicker TValue="TValue" Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged" DateFormat="@DateFormat"
                       Placeholder="@Placeholder" Disabled="@Disabled" AllowClear="true" />
     @if (Required)
     {

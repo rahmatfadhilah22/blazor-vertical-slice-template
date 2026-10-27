@@ -27,4 +27,5 @@ public abstract class BaseComponent : ComponentBase, IDisposable
     {
         L.Changed -= StateHasChanged;
         GC.SuppressFinalize(this);
-    }}
+    }
+}

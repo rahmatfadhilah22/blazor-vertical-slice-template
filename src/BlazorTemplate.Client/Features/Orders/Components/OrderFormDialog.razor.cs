@@ -23,6 +23,9 @@ public partial class OrderFormDialog : BaseComponent
     {
         await base.OnInitializedAsync();
 
+        if (Order is null)
+            _model = DraftStore.GetOrCreate<Order>();
+
         if (Order is not null)
             _model = new Order
             {
@@ -74,6 +77,7 @@ public partial class OrderFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Orders/Update/{model.OrderID}", model);
 
+            DraftStore.Clear<Order>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

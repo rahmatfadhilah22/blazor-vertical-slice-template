@@ -21,6 +21,9 @@ public partial class EmployeeFormDialog : BaseComponent
     {
         await base.OnInitializedAsync();
 
+        if (Employee is null)
+            _model = DraftStore.GetOrCreate<Employee>();
+
         if (Employee is not null)
             _model = new Employee
             {
@@ -72,6 +75,7 @@ public partial class EmployeeFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Employees/Update/{model.EmployeeID}", model);
 
+            DraftStore.Clear<Employee>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

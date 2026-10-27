@@ -9,7 +9,9 @@
  * yang ditentukan fitur ("Nama kategori"), bukan teks umum komponen.
  *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenTextBox Name="@FieldName" @bind-Value="Value" MaxLength="@MaxLength"
+    @* Value/ValueChanged diteruskan langsung. @bind-Value di sini hanya menulis
+       parameter Value milik wrapper dan tidak pernah memanggil ValueChanged parent. *@
+    <RadzenTextBox Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged" MaxLength="@MaxLength"
                    Placeholder="@Placeholder" Disabled="@Disabled" />
     @if (Required)
     {

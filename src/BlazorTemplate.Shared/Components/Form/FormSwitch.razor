@@ -1,5 +1,5 @@
 @inherits FormInputBase<bool>
 @* Switch/toggle on-off berlabel + error server. Sama dengan RadzenSwitch, hanya beda nama makna. *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenSwitch @bind-Value="Value" Disabled="@Disabled" />
+    <RadzenSwitch Value="@Value" ValueChanged="@ValueChanged" Disabled="@Disabled" />
 </FormField>

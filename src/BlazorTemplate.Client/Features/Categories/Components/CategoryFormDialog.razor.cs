@@ -12,7 +12,7 @@ public partial class CategoryFormDialog : BaseComponent
     [Parameter] public Category? Category { get; set; }
     [Parameter] public DialogGuard Guard { get; set; } = new();
     [Inject] public ApiClient Api { get; set; } = default!;
-    private readonly Category _model = new();
+    private Category _model = new();
     private readonly Dictionary<string, string> _errors = [];
     private string? _message;
 
@@ -20,6 +20,9 @@ public partial class CategoryFormDialog : BaseComponent
     {
         // Wajib: BaseComponent memasang langganan perubahan bahasa di sini.
         base.OnInitialized();
+
+        if (Category is null)
+            _model = DraftStore.GetOrCreate<Category>();
 
         if (Category is null)
             return;
@@ -46,6 +49,7 @@ public partial class CategoryFormDialog : BaseComponent
                 await Api.PostAsync<Category>("Categories/Insert", model);
             else
                 await Api.PutAsync($"Categories/Update/{model.CategoryID}", model);
+            DraftStore.Clear<Category>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

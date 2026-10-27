@@ -20,6 +20,9 @@ public partial class CustomerDemographicFormDialog : BaseComponent
     {
         base.OnInitialized();
 
+        if (Demographic is null)
+            _model = DraftStore.GetOrCreate<CustomerDemographic>();
+
         if (Demographic is not null)
             _model = new CustomerDemographic
             {
@@ -46,6 +49,7 @@ public partial class CustomerDemographicFormDialog : BaseComponent
             else
                 await Api.PutAsync($"CustomerDemographics/Update/{model.CustomerTypeID}", model);
 
+            DraftStore.Clear<CustomerDemographic>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

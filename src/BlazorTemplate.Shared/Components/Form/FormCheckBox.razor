@@ -1,5 +1,5 @@
 @inherits FormInputBase<bool>
 @* Checkbox berlabel + error server. Label membungkus kontrol, jadi klik teks ikut mencentang. *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenCheckBox TValue="bool" Name="@FieldName" @bind-Value="Value" Disabled="@Disabled" />
+    <RadzenCheckBox TValue="bool" Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged" Disabled="@Disabled" />
 </FormField>

@@ -21,6 +21,9 @@ public partial class TerritoryFormDialog : BaseComponent
     {
         await base.OnInitializedAsync();
 
+        if (Territory is null)
+            _model = DraftStore.GetOrCreate<Territory>();
+
         if (Territory is not null)
             _model = new Territory
             {
@@ -60,6 +63,7 @@ public partial class TerritoryFormDialog : BaseComponent
             else
                 await Api.PutAsync($"Territories/Update/{model.TerritoryID}", model);
 
+            DraftStore.Clear<Territory>();
             DialogService.Close(true);
         }
         catch (ApiException ex)

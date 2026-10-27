@@ -4,7 +4,7 @@
    API Radzen apa adanya; pemuat opsi tetap tanggung jawab pemanggil (lihat dialog yang
    memanggil GetRows dengan pageSize 100). *@
 <FormField Label="@Label" Error="@Error" FullWidth="@FullWidth">
-    <RadzenDropDown TValue="TValue" Name="@FieldName" @bind-Value="Value"
+    <RadzenDropDown TValue="TValue" Name="@FieldName" Value="@Value" ValueChanged="@ValueChanged"
                     Data="@Data" TextProperty="@TextProperty" ValueProperty="@ValueProperty"
                     AllowClear="@AllowClear" AllowFiltering="true"
                     Placeholder="@(Placeholder ?? L["common.optional"])" Disabled="@Disabled" />
