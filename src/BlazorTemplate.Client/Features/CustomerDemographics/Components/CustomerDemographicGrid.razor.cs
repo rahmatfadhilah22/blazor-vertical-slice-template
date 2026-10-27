@@ -4,7 +4,6 @@ using BlazorTemplate.Shared.Components;
 using BlazorTemplate.Shared.Components.DataGrid;
 using BlazorTemplate.Shared.Components.Form;
 using Microsoft.AspNetCore.Components;
-using Radzen;
 
 namespace BlazorTemplate.Client.Features.CustomerDemographics.Components;
 

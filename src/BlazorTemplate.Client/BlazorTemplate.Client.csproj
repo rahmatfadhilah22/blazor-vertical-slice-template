@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- _Imports.razor hanya berlaku untuk file .razor; baris ini membuat namespace
+         Radzen tersedia juga di code-behind (.razor.cs). -->
+    <Using Include="Radzen" />
     <!-- PrivateAssets: jangan mengalir ke host WASM yang tidak punya runtime pack AspNetCore.App. -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" PrivateAssets="all" />
     <PackageReference Include="Radzen.Blazor" Version="12.*" />
