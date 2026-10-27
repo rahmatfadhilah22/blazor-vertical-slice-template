@@ -100,7 +100,7 @@ Trailing slash ditambahkan otomatis di `Program.cs`; URL endpoint ditulis relati
 ```
 src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas Radzen
   Components/Button.razor(+.cs)         wrapper RadzenButton + enum ButtonVariant
-  Components/BaseComponent.cs           base class: DialogService + NotificationService
+  Components/BaseComponent.cs           base class: DialogService + NotificationService + L
   Components/PageHeader.razor           judul halaman + slot aksi
   Components/EmptyState.razor           kondisi kosong / gagal muat
   Components/FieldError.razor           pesan error di bawah field
@@ -118,7 +118,10 @@ src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
   Features/Categories/Pages/            CategoryListPage — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
-  Layout/MainLayout.razor               RadzenTheme (material) + RadzenComponents
+  Layout/MainLayout.razor               RadzenTheme (material) + RadzenComponents + menu
+  Layout/PlainLayout.razor              kerangka tanpa menu, untuk halaman 404
+  Routes.razor                          router + halaman NotFound
+  PageNotFound.razor                    halaman 404 (di dalam PlainLayout)
 src/BlazorTemplate.Client.App/       Blazor WASM host
   Program.cs                            registrasi service + HttpClient + base URL
   LoggingHandler.cs                     log semua request/response ke console browser

@@ -231,3 +231,179 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ===== Halaman 404 =====
+ * Satu kartu, dua kolom. Kolom kiri adalah "baris data yang hilang": kertas bergaris
+ * seperti baris grid dengan angka 404 besar. Kolom kanan menjelaskan dan memberi jalan
+ * keluar. Alamat yang gagal dibuka ditampilkan sebagai chip monospace supaya pengguna
+ * bisa memastikan salah ketik atau melaporkannya.
+ *
+ * Dirender di PlainLayout (tanpa sidebar), jadi kartunya yang memusatkan diri secara
+ * vertikal — bukan body — supaya header tipis di atasnya tetap terlihat.
+ */
+.app-notfound {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+    width: 100%;
+    max-width: 820px;
+    margin: auto;
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    border: 1px solid var(--rz-base-200);
+    border-radius: 16px;
+    background-color: var(--rz-base-background-color);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 24px 48px -32px rgba(16, 24, 40, 0.5);
+    animation: app-notfound-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ===== PlainLayout =====
+ * Kerangka minimal untuk halaman tanpa navigasi (404). Header sengaja tipis dan
+ * transparan: nama aplikasi + pemilih bahasa, tanpa menu yang tidak relevan.
+ */
+.app-plain-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0 clamp(1rem, 4vw, 2rem);
+    background-color: var(--rz-body-background-color);
+}
+
+.app-plain-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.app-plain-brand {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--rz-base-700);
+}
+
+.app-plain-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding-bottom: clamp(1.5rem, 6vh, 4rem);
+}
+
+/* Garis buku hanya di kolom angka: teks di kolom kanan tetap bersih dan mudah dibaca. */
+.app-notfound-art {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 11rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: var(--rz-base-100);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 43px,
+        var(--rz-base-200) 43px,
+        var(--rz-base-200) 44px);
+}
+
+.app-notfound-code {
+    font-size: clamp(3.5rem, 9vw, 5.5rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    /* Angka dekoratif (aria-hidden, judul di kanan yang membawa makna): dibuat pudar
+       dengan warna brand supaya tidak bersaing dengan teks, tapi tetap bukan abu mati. */
+    color: var(--rz-primary);
+    opacity: 0.18;
+}
+
+/* Chip monospace kecil: menegaskan bahwa yang gagal dicari adalah baris data. */
+.app-notfound-row {
+    padding: 0.125rem 0.5rem;
+    border: 1px dashed var(--rz-base-400);
+    border-radius: 999px;
+    color: var(--rz-base-600);
+    font-size: 0.6875rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.app-notfound-body {
+    min-width: 0;
+    animation: app-notfound-in 380ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+}
+
+.app-notfound-kicker {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rz-primary);
+}
+
+.app-notfound-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--rz-base-800);
+}
+
+.app-notfound-text {
+    margin: 0 0 1.5rem;
+    color: var(--rz-base-600);
+    line-height: 1.6;
+}
+
+.app-notfound-path {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--rz-base-200);
+    border-radius: 6px;
+    background-color: var(--rz-base-100);
+    color: var(--rz-base-700);
+    font-size: 0.8125rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+.app-notfound-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@keyframes app-notfound-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .app-notfound {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .app-notfound-art {
+        min-height: 8rem;
+    }
+}
+
+/* Animasi masuk hanya dekorasi; hormati pengaturan sistem. */
+@media (prefers-reduced-motion: reduce) {
+    .app-notfound,
+    .app-notfound-body {
+        animation: none;
+    }
+}

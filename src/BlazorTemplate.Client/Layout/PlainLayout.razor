@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+@* Layout tanpa sidebar dan tanpa header aplikasi: dipakai halaman yang tidak punya
+ * konteks navigasi, mis. 404. Tetap memuat RadzenTheme + RadzenComponents karena
+ * isinya (Button, LanguageSwitch) komponen Radzen.
+ *
+ * Tidak berlangganan Localizer.Changed: di sini tidak ada teks tetap selain nama
+ * aplikasi, dan isi @Body berlangganan sendiri lewat BaseComponent.
+ *@
+<RadzenTheme Theme="material" />
+<RadzenComponents />
+
+<div class="app-plain-shell">
+    <header class="app-plain-bar">
+        <span class="app-plain-brand">BlazorTemplate</span>
+        <LanguageSwitch />
+    </header>
+
+    <main class="app-plain-content">
+        @Body
+    </main>
+</div>

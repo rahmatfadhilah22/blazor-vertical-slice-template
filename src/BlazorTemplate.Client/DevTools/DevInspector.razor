@@ -1,0 +1,194 @@
+@inherits BaseComponent
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@* Dev inspector: daftar route dan komponen aplikasi beserta file .razor-nya, supaya
+ * pertanyaan "halaman ini ada di file mana?" bisa dijawab tanpa grep.
+ *
+ * Hanya dirender di DEBUG (lihat MainLayout/PlainLayout). Tidak masuk Localizer: ini
+ * alat developer, bukan teks yang dilihat pengguna.
+ *
+ * Batasnya: Blazor tidak menandai DOM dengan komponen asalnya, jadi "klik elemen lalu
+ * lompat ke komponen" tidak bisa dilakukan tanpa menambahkan data-* manual di setiap
+ * komponen. Yang ini menjawab arah sebaliknya — dari route/nama ke path file.
+ *@
+<button class="app-dev-toggle" @onclick="() => _open = !_open" title="Dev: route &amp; komponen">
+    <RadzenIcon Icon="code" />
+</button>
+
+@if (_open)
+{
+    <aside class="app-dev-panel">
+        <header class="app-dev-head">
+            <div>
+                <strong>Route &amp; komponen</strong>
+                <span class="app-dev-now">@CurrentPath</span>
+            </div>
+            <button class="app-dev-close" @onclick="() => _open = false" title="Tutup">&times;</button>
+        </header>
+
+        <input type="text" class="rz-textbox app-dev-search" placeholder="Cari nama, route, atau file..."
+               @bind="_filter" @bind:event="oninput" />
+
+        <div class="app-dev-list">
+            @if (Pages.Count > 0)
+            {
+                <p class="app-dev-group">Halaman (@Pages.Count)</p>
+                @foreach (var entry in Pages)
+                {
+                    <button class="app-dev-row @(entry.IsCurrent ? "is-current" : null)"
+                            @onclick="() => CopyAsync(entry.Path)">
+                        <span class="app-dev-name">
+                            @entry.Name
+                            <code class="app-dev-route">@entry.Route</code>
+                        </span>
+                        <span class="app-dev-path">@entry.Path</span>
+                    </button>
+                }
+            }
+
+            @if (Components.Count > 0)
+            {
+                <p class="app-dev-group">Komponen (@Components.Count)</p>
+                @foreach (var entry in Components)
+                {
+                    <button class="app-dev-row" @onclick="() => CopyAsync(entry.Path)">
+                        <span class="app-dev-name">@entry.Name</span>
+                        <span class="app-dev-path">@entry.Path</span>
+                    </button>
+                }
+            }
+
+            @if (Pages.Count == 0 && Components.Count == 0)
+            {
+                <p class="app-dev-empty">Tidak ada yang cocok dengan "@_filter".</p>
+            }
+        </div>
+
+        <footer class="app-dev-foot">@_copied</footer>
+    </aside>
+}
+
+@code {
+    private bool _open;
+    private string _filter = "";
+    private string? _copied;
+
+    private string CurrentPath => new Uri(Nav.Uri).PathAndQuery;
+
+    /// <summary>
+    /// Assembly aplikasi + folder proyeknya. Path file diturunkan dari namespace dengan
+    /// asumsi namespace mengikuti folder (aturan proyek ini). Kalau suatu file menyimpang,
+    /// baris itu menunjuk path yang salah — cek namespace-nya, bukan DevInspector-nya.
+    /// </summary>
+    private static readonly (Assembly Assembly, string ProjectDir, string RootNamespace)[] Projects =
+    [
+        (typeof(CategoryGrid).Assembly, "src/BlazorTemplate.Client", "BlazorTemplate.Client"),
+        (typeof(Button).Assembly, "src/BlazorTemplate.Shared", "BlazorTemplate.Shared"),
+    ];
+
+    private static readonly Entry[] AllEntries = Build();
+
+    private sealed record Entry(string Name, string? Route, string Path, bool IsPage)
+    {
+        public bool IsCurrent { get; init; }
+    }
+
+    private IReadOnlyList<Entry> Pages => Filter(AllEntries.Where(e => e.IsPage));
+    private IReadOnlyList<Entry> Components => Filter(AllEntries.Where(e => !e.IsPage));
+
+    private IReadOnlyList<Entry> Filter(IEnumerable<Entry> entries)
+    {
+        if (string.IsNullOrWhiteSpace(_filter))
+            return entries.ToList();
+
+        var needle = _filter.Trim();
+        return entries.Where(e =>
+                e.Name.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
+                e.Path.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
+                (e.Route?.Contains(needle, StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+    }
+
+    private static Entry[] Build()
+    {
+        var entries = new List<Entry>();
+        foreach (var (assembly, projectDir, rootNamespace) in Projects)
+        {
+            foreach (var type in Types(assembly))
+            {
+                if (type.IsAbstract || type.IsInterface || type.IsNested)
+                    continue;
+
+                var routes = type.GetCustomAttributes<RouteAttribute>(inherit: false)
+                    .Select(a => a.Template)
+                    .ToArray();
+
+                var path = SourcePath(type, projectDir, rootNamespace);
+                var name = type.Name.Split('`')[0];
+
+                if (routes.Length == 0)
+                {
+                    // Hanya komponen Razor milik aplikasi: kelas biasa (Localizer,
+                    // ApiClient) bukan komponen dan tidak punya file .razor.
+                    if (typeof(IComponent).IsAssignableFrom(type))
+                        entries.Add(new Entry(name, null, path, IsPage: false));
+                    continue;
+                }
+
+                foreach (var route in routes)
+                    entries.Add(new Entry(name, route, path, IsPage: true));
+            }
+        }
+
+        return [.. entries.OrderBy(e => e.IsPage ? 0 : 1).ThenBy(e => e.Name)];
+    }
+
+    private static IEnumerable<Type> Types(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            // Satu tipe gagal dimuat tidak boleh menyembunyikan sisanya.
+            return ex.Types.Where(t => t is not null)!;
+        }
+    }
+
+    private static string SourcePath(Type type, string projectDir, string rootNamespace)
+    {
+        var ns = type.Namespace ?? "";
+        var folder = ns.StartsWith(rootNamespace, StringComparison.Ordinal)
+            ? ns[rootNamespace.Length..].TrimStart('.')
+            : "";
+
+        var fileName = type.Name.Split('`')[0] + ".razor";
+        var path = folder.Replace('.', '/');
+
+        return string.IsNullOrEmpty(path)
+            ? $"{projectDir}/{fileName}"
+            : $"{projectDir}/{path}/{fileName}";
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        // IsCurrent hanya berguna untuk render saat ini; hitung ulang dari AllEntries.
+    }
+
+    private async Task CopyAsync(string path)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", path);
+            _copied = $"Tersalin: {path}";
+        }
+        catch
+        {
+            // Clipboard butuh permission/fokus; path tetap terlihat dan bisa dipilih manual.
+            _copied = "Clipboard ditolak browser — salin manual dari baris di atas.";
+        }
+    }
+}

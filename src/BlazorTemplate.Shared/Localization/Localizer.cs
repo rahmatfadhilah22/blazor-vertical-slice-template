@@ -48,7 +48,12 @@ public sealed class Localizer
         ["common.search"] = "Cari...",
         ["common.action"] = "Aksi",
         ["common.required"] = "{0} wajib diisi.",
-        ["common.pageNotFound"] = "Halaman tidak ditemukan.",
+
+        ["notFound.kicker"] = "Error 404",
+        ["notFound.title"] = "Halaman tidak ditemukan",
+        ["notFound.text"] = "Alamat ini tidak ada, atau sudah dipindahkan:",
+        ["notFound.home"] = "Ke beranda",
+        ["notFound.row"] = "baris tidak ditemukan",
 
         ["grid.selectAll"] = "Pilih semua di halaman ini",
         ["grid.selectRow"] = "Pilih baris",
@@ -86,7 +91,12 @@ public sealed class Localizer
         ["common.search"] = "Search...",
         ["common.action"] = "Action",
         ["common.required"] = "{0} is required.",
-        ["common.pageNotFound"] = "Page not found.",
+
+        ["notFound.kicker"] = "Error 404",
+        ["notFound.title"] = "Page not found",
+        ["notFound.text"] = "This address doesn't exist, or it has moved:",
+        ["notFound.home"] = "Go home",
+        ["notFound.row"] = "row not found",
 
         ["grid.selectAll"] = "Select all on this page",
         ["grid.selectRow"] = "Select row",

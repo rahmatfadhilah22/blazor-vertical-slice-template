@@ -1,0 +1,34 @@
+@inherits BaseComponent
+@inject NavigationManager Nav
+
+@* Halaman 404. Dirender di PlainLayout (lihat Routes.razor): tanpa sidebar dan menu,
+ * karena alamat yang salah tidak punya menu aktif — sidebar hanya menyisakan ruang
+ * kosong. Header tipisnya tetap menyediakan pemilih bahasa.
+ *
+ * Namanya PageNotFound, bukan NotFound: <Router> punya parameter RenderFragment NotFound,
+ * jadi elemen <NotFound> di dalam router akan dianggap parameter itu, bukan komponen ini.
+ *@
+<div class="app-notfound">
+    <div class="app-notfound-art" aria-hidden="true">
+        <span class="app-notfound-code">404</span>
+        @* Metafora aplikasi: yang hilang bukan halaman, tapi satu baris data. *@
+        <span class="app-notfound-row">@L["notFound.row"]</span>
+    </div>
+
+    <div class="app-notfound-body">
+        <p class="app-notfound-kicker">@L["notFound.kicker"]</p>
+        <h1 class="app-notfound-title">@L["notFound.title"]</h1>
+        <p class="app-notfound-text">
+            @L["notFound.text"]
+            <code class="app-notfound-path">@Path</code>
+        </p>
+        <div class="app-notfound-actions">
+            <Button Text="@L["notFound.home"]" Icon="home"
+                    Click="@(() => Nav.NavigateTo("/"))" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Path => new Uri(Nav.Uri).PathAndQuery;
+}
