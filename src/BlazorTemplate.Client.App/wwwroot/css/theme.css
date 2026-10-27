@@ -103,6 +103,9 @@
        di dalamnya. Sengaja lebih tinggi dari sel body (0.75rem) supaya header terbaca
        sebagai pita, bukan baris data. */
     --rz-grid-header-cell-padding: 0.875rem 1rem;
+    /* Judul kolom punya padding-inline bawaan (0.5rem/1rem) DI DALAM div header,
+       sehingga teks header bergeser ke kanan dari teks sel body. Nolkan. */
+    --rz-grid-header-title-padding-inline: 0;
     --rz-grid-header-cell-border-bottom: 2px solid var(--rz-base-300);
     --rz-grid-header-cell-border: none;
     --rz-grid-header-color: var(--rz-base-700);

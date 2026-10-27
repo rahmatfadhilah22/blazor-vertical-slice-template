@@ -10,8 +10,8 @@
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-py-2 rz-w-100">
             <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)" />
             <RadzenText TextStyle="TextStyle.H6" Class="rz-mb-0">BlazorTemplate</RadzenText>
-            @* Bahasa: dropdown didorong ke kanan header. *@
-            <div class="rz-ml-auto">
+            @* Bahasa: dropdown didorong ke kanan header, diberi jarak 1rem dari tepi. *@
+            <div class="rz-ml-auto rz-pe-4">
                 <LanguageSwitch />
             </div>
         </RadzenStack>
