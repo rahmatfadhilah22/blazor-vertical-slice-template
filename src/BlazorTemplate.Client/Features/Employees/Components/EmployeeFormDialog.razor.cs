@@ -56,7 +56,15 @@ public partial class EmployeeFormDialog : FormDialogBase<Employee>
     }
 
     private async Task LoadEmployeesAsync(LoadDataArgs args)
-        => _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
-    private Task SaveAsync(Employee model) => SubmitAsync(model, "Employees", Employee is null ? null : model.EmployeeID);
+    private Task SaveAsync(Employee model)
+    {
+        if (Employee is null)
+            return SubmitAsync(model, "Employees", null);
+
+        return SubmitAsync(model, "Employees", model.EmployeeID);
+    }
 }

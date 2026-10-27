@@ -29,5 +29,11 @@ public partial class CategoryFormDialog : FormDialogBase<Category>
         _model.Description = Category.Description;
         _model.Picture = Category.Picture;
     }
-    private Task SaveAsync(Category model) => SubmitAsync(model, "Categories", Category is null ? null : model.CategoryID);
+    private Task SaveAsync(Category model)
+    {
+        if (Category is null)
+            return SubmitAsync(model, "Categories", null);
+
+        return SubmitAsync(model, "Categories", model.CategoryID);
+    }
 }

@@ -57,13 +57,25 @@ public partial class OrderFormDialog : FormDialogBase<Order>
     }
 
     private async Task LoadCustomersAsync(LoadDataArgs args)
-        => _customers = (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _customers = (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
     private async Task LoadEmployeesAsync(LoadDataArgs args)
-        => _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
     private async Task LoadShippersAsync(LoadDataArgs args)
-        => _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
-    private Task SaveAsync(Order model) => SubmitAsync(model, "Orders", Order is null ? null : model.OrderID);
+    private Task SaveAsync(Order model)
+    {
+        if (Order is null)
+            return SubmitAsync(model, "Orders", null);
+
+        return SubmitAsync(model, "Orders", model.OrderID);
+    }
 }

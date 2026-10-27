@@ -43,7 +43,15 @@ public partial class TerritoryFormDialog : FormDialogBase<Territory>
     }
 
     private async Task LoadRegionsAsync(LoadDataArgs args)
-        => _regions = (await Api.GetPagedAsync<Region>("Regions/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _regions = (await Api.GetPagedAsync<Region>("Regions/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
-    private Task SaveAsync(Territory model) => SubmitAsync(model, "Territories", Territory is null ? null : model.TerritoryID);
+    private Task SaveAsync(Territory model)
+    {
+        if (Territory is null)
+            return SubmitAsync(model, "Territories", null);
+
+        return SubmitAsync(model, "Territories", model.TerritoryID);
+    }
 }

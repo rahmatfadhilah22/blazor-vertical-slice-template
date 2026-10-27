@@ -51,10 +51,20 @@ public partial class ProductFormDialog : FormDialogBase<Product>
     }
 
     private async Task LoadCategoriesAsync(LoadDataArgs args)
-        => _categories = (await Api.GetPagedAsync<Category>("Categories/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _categories = (await Api.GetPagedAsync<Category>("Categories/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
     private async Task LoadSuppliersAsync(LoadDataArgs args)
-        => _suppliers = (await Api.GetPagedAsync<Supplier>("Suppliers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    {
+        _suppliers = (await Api.GetPagedAsync<Supplier>("Suppliers/GetRows", 1, 50, args.Filter)).Items.ToList();
+    }
 
-    private Task SaveAsync(Product model) => SubmitAsync(model, "Products", Product is null ? null : model.ProductID);
+    private Task SaveAsync(Product model)
+    {
+        if (Product is null)
+            return SubmitAsync(model, "Products", null);
+
+        return SubmitAsync(model, "Products", model.ProductID);
+    }
 }

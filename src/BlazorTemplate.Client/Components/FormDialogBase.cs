@@ -20,7 +20,12 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
     protected string? _message;
 
     protected string? ErrorFor(string field)
-        => _errors.TryGetValue(field, out var message) ? message : null;
+    {
+        if (_errors.TryGetValue(field, out var message))
+            return message;
+
+        return null;
+    }
 
     /// <summary>Simpan model. <paramref name="id"/> null = insert, selain itu update.</summary>
     protected async Task SubmitAsync(T model, string controller, object? id)

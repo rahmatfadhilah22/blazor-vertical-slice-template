@@ -29,5 +29,11 @@ public partial class ShipperFormDialog : FormDialogBase<Shipper>
             };
     }
 
-    private Task SaveAsync(Shipper model) => SubmitAsync(model, "Shippers", Shipper is null ? null : model.ShipperID);
+    private Task SaveAsync(Shipper model)
+    {
+        if (Shipper is null)
+            return SubmitAsync(model, "Shippers", null);
+
+        return SubmitAsync(model, "Shippers", model.ShipperID);
+    }
 }
