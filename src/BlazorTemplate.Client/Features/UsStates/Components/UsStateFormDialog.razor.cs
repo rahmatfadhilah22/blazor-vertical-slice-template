@@ -33,8 +33,8 @@ public partial class UsStateFormDialog : FormDialogBase<UsState>
     private Task SaveAsync(UsState model)
     {
         if (UsState is null)
-            return SubmitAsync(model, "UsStates", null);
+            return SubmitAsync(model, "UsStates/Insert", "UsStates/Update", null);
 
-        return SubmitAsync(model, "UsStates", model.StateID);
+        return SubmitAsync(model, "UsStates/Insert", "UsStates/Update", model.StateID);
     }
 }

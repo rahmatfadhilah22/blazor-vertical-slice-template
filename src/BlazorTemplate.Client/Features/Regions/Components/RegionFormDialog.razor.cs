@@ -27,8 +27,8 @@ public partial class RegionFormDialog : FormDialogBase<Region>
     private Task SaveAsync(Region model)
     {
         if (Region is null)
-            return SubmitAsync(model, "Regions", null);
+            return SubmitAsync(model, "Regions/Insert", "Regions/Update", null);
 
-        return SubmitAsync(model, "Regions", model.RegionID);
+        return SubmitAsync(model, "Regions/Insert", "Regions/Update", model.RegionID);
     }
 }

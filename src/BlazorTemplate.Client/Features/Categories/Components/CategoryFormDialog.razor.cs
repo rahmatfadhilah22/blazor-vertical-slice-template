@@ -32,8 +32,8 @@ public partial class CategoryFormDialog : FormDialogBase<Category>
     private Task SaveAsync(Category model)
     {
         if (Category is null)
-            return SubmitAsync(model, "Categories", null);
+            return SubmitAsync(model, "Categories/Insert", "Categories/Update", null);
 
-        return SubmitAsync(model, "Categories", model.CategoryID);
+        return SubmitAsync(model, "Categories/Insert", "Categories/Update", model.CategoryID);
     }
 }

@@ -27,8 +27,11 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
         return null;
     }
 
-    /// <summary>Simpan model. <paramref name="id"/> null = insert, selain itu update.</summary>
-    protected async Task SubmitAsync(T model, string controller, object? id)
+    /// <summary>
+    /// Simpan model. <paramref name="id"/> null = insert, selain itu update.
+    /// URL action dioper pemanggil karena nama action tiap backend bisa berbeda.
+    /// </summary>
+    protected async Task SubmitAsync(T model, string insertUrl, string updateUrl, object? id)
     {
         if (Guard.Busy)
             return;
@@ -39,9 +42,9 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
         try
         {
             if (id is null)
-                await Api.PostAsync<T>($"{controller}/Insert", model);
+                await Api.PostAsync<T>(insertUrl, model);
             else
-                await Api.PutAsync($"{controller}/Update/{id}", model);
+                await Api.PutAsync($"{updateUrl}/{id}", model);
 
             DraftStore.Clear<T>();
             DialogService.Close(true);

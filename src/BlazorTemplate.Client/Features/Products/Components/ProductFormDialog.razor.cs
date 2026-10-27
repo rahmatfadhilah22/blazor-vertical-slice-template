@@ -63,8 +63,8 @@ public partial class ProductFormDialog : FormDialogBase<Product>
     private Task SaveAsync(Product model)
     {
         if (Product is null)
-            return SubmitAsync(model, "Products", null);
+            return SubmitAsync(model, "Products/Insert", "Products/Update", null);
 
-        return SubmitAsync(model, "Products", model.ProductID);
+        return SubmitAsync(model, "Products/Insert", "Products/Update", model.ProductID);
     }
 }

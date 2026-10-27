@@ -40,8 +40,8 @@ public partial class CustomerFormDialog : FormDialogBase<Customer>
     private Task SaveAsync(Customer model)
     {
         if (Customer is null)
-            return SubmitAsync(model, "Customers", null);
+            return SubmitAsync(model, "Customers/Insert", "Customers/Update", null);
 
-        return SubmitAsync(model, "Customers", model.CustomerID);
+        return SubmitAsync(model, "Customers/Insert", "Customers/Update", model.CustomerID);
     }
 }

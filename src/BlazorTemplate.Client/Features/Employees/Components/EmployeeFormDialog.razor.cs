@@ -63,8 +63,8 @@ public partial class EmployeeFormDialog : FormDialogBase<Employee>
     private Task SaveAsync(Employee model)
     {
         if (Employee is null)
-            return SubmitAsync(model, "Employees", null);
+            return SubmitAsync(model, "Employees/Insert", "Employees/Update", null);
 
-        return SubmitAsync(model, "Employees", model.EmployeeID);
+        return SubmitAsync(model, "Employees/Insert", "Employees/Update", model.EmployeeID);
     }
 }

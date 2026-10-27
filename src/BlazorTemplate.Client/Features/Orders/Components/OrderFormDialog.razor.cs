@@ -74,8 +74,8 @@ public partial class OrderFormDialog : FormDialogBase<Order>
     private Task SaveAsync(Order model)
     {
         if (Order is null)
-            return SubmitAsync(model, "Orders", null);
+            return SubmitAsync(model, "Orders/Insert", "Orders/Update", null);
 
-        return SubmitAsync(model, "Orders", model.OrderID);
+        return SubmitAsync(model, "Orders/Insert", "Orders/Update", model.OrderID);
     }
 }

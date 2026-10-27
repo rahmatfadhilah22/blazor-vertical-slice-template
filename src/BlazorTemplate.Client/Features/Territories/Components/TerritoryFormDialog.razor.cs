@@ -50,8 +50,8 @@ public partial class TerritoryFormDialog : FormDialogBase<Territory>
     private Task SaveAsync(Territory model)
     {
         if (Territory is null)
-            return SubmitAsync(model, "Territories", null);
+            return SubmitAsync(model, "Territories/Insert", "Territories/Update", null);
 
-        return SubmitAsync(model, "Territories", model.TerritoryID);
+        return SubmitAsync(model, "Territories/Insert", "Territories/Update", model.TerritoryID);
     }
 }

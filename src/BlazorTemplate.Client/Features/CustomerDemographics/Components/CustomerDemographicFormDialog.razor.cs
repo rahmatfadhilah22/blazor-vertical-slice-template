@@ -31,8 +31,8 @@ public partial class CustomerDemographicFormDialog : FormDialogBase<CustomerDemo
     private Task SaveAsync(CustomerDemographic model)
     {
         if (Demographic is null)
-            return SubmitAsync(model, "CustomerDemographics", null);
+            return SubmitAsync(model, "CustomerDemographics/Insert", "CustomerDemographics/Update", null);
 
-        return SubmitAsync(model, "CustomerDemographics", model.CustomerTypeID);
+        return SubmitAsync(model, "CustomerDemographics/Insert", "CustomerDemographics/Update", model.CustomerTypeID);
     }
 }
