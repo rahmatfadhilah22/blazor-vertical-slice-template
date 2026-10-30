@@ -16,4 +16,9 @@ public class Order
     public string? ShipRegion { get; set; }
     public string? ShipPostalCode { get; set; }
     public string? ShipCountry { get; set; }
+
+    // Hasil join GetRows, hanya untuk tampilan grid.
+    public string? CustomerName { get; set; }
+    public string? EmployeeName { get; set; }
+    public string? ShipperName { get; set; }
 }

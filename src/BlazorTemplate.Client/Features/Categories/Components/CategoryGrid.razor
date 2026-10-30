@@ -7,20 +7,20 @@
           LoadData="LoadAsync"
           SelectionChanged="StateHasChanged">
     <Toolbar>
-        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Success"
+        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Primary"
                 Click="@(() => OpenFormAsync(null))" />
         <Button Text="@DeleteText"
-                Icon="delete" Variant="ButtonVariant.Danger"
+                Icon="delete" Variant="@(_grid?.SelectedCount is > 0 ? ButtonVariant.Danger : ButtonVariant.Light)"
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
 
     <ChildContent>
-        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="@L["category.name"]" Width="40%" />
+        <RadzenDataGridColumn TItem="Category" Property="CategoryName" Title="@L["category.name"]" />
         <RadzenDataGridColumn TItem="Category" Property="Description" Title="@L["category.description"]" Width="50%" />
         <RadzenDataGridColumn TItem="Category" Context="category" Title="@L["common.action"]" Sortable="false"
-                              Filterable="false" Width="10%" TextAlign="TextAlign.Center">
+                              Filterable="false" Width="88px" TextAlign="TextAlign.Center">
             <Template>
-                <Button Icon="edit" Size="ButtonSize.Small"
+                <Button Icon="edit" Variant="ButtonVariant.Light" AriaLabel="@L["common.edit"]" Size="ButtonSize.Small"
                         Click="@(() => OpenFormAsync(category))" />
             </Template>
         </RadzenDataGridColumn>

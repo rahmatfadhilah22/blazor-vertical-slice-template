@@ -38,6 +38,7 @@ public sealed class Localizer
         ["category.deleted"] = "Terhapus",
 
         ["common.add"] = "Tambah",
+        ["common.edit"] = "Ubah",
         ["common.delete"] = "Hapus",
         ["common.deleteCount"] = "Hapus ({0})",
         ["common.deleteFailed"] = "Gagal menghapus",
@@ -76,6 +77,11 @@ public sealed class Localizer
         ["common.transactions"] = "Transaksi",
         ["common.yes"] = "Ya",
         ["common.no"] = "Tidak",
+        ["common.back"] = "Kembali",
+        ["common.saved"] = "Tersimpan.",
+
+        ["order.subtitle"] = "Kelola pesanan dan pengiriman",
+        ["order.notFound"] = "Pesanan tidak ditemukan. Mungkin sudah dihapus.",
 
         ["entity.customer"] = "Pelanggan",
         ["entity.customers"] = "Pelanggan",
@@ -176,6 +182,7 @@ public sealed class Localizer
         ["category.deleted"] = "Deleted",
 
         ["common.add"] = "Add",
+        ["common.edit"] = "Edit",
         ["common.delete"] = "Delete",
         ["common.deleteCount"] = "Delete ({0})",
         ["common.deleteFailed"] = "Delete failed",
@@ -214,6 +221,11 @@ public sealed class Localizer
         ["common.transactions"] = "Transactions",
         ["common.yes"] = "Yes",
         ["common.no"] = "No",
+        ["common.back"] = "Back",
+        ["common.saved"] = "Saved.",
+
+        ["order.subtitle"] = "Manage orders and shipping",
+        ["order.notFound"] = "Order not found. It may have been deleted.",
 
         ["entity.customer"] = "Customer",
         ["entity.customers"] = "Customers",

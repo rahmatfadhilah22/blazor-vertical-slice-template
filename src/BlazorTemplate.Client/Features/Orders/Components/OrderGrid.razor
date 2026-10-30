@@ -1,25 +1,20 @@
 @inherits BaseComponent
 <DataGrid @ref="_grid" TItem="Order" AllowSearch AllowSelection
           SearchPlaceholder="@L.Format("common.searchFor", L["entity.orders"])"
-          LoadData="LoadAsync" SelectionChanged="StateHasChanged">
+          LoadData="LoadAsync" SelectionChanged="StateHasChanged"
+          RowClick="OpenForm">
     <Toolbar>
-        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Success"
-                Click="@(() => OpenFormAsync(null))" />
-        <Button Text="@DeleteText" Icon="delete" Variant="ButtonVariant.Danger"
+        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Primary"
+                Click="@(() => OpenForm(null))" />
+        <Button Text="@DeleteText" Icon="delete" Variant="@(_grid?.SelectedCount is > 0 ? ButtonVariant.Danger : ButtonVariant.Light)"
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
     <ChildContent>
-        <RadzenDataGridColumn TItem="Order" Property="OrderID" Title="ID" Width="8%" />
-        <RadzenDataGridColumn TItem="Order" Property="CustomerID" Title="@L["field.customerID"]" Width="14%" />
-        <RadzenDataGridColumn TItem="Order" Property="EmployeeID" Title="@L["field.employeeID"]" Width="12%" />
-        <RadzenDataGridColumn TItem="Order" Property="OrderDate" Title="@L["field.orderDate"]" Width="16%" FormatString="{0:yyyy-MM-dd}" />
-        <RadzenDataGridColumn TItem="Order" Property="ShipVia" Title="@L["field.shipVia"]" Width="12%" />
-        <RadzenDataGridColumn TItem="Order" Property="Freight" Title="@L["field.freight"]" Width="13%" />
-        <RadzenDataGridColumn TItem="Order" Context="order" Title="@L["common.action"]" Sortable="false"
-                              Filterable="false" Width="15%" TextAlign="TextAlign.Center">
-            <Template>
-                <Button Icon="edit" Size="ButtonSize.Small" Click="@(() => OpenFormAsync(order))" />
-            </Template>
-        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Order" Property="OrderID" Title="ID" Width="72px" />
+        <RadzenDataGridColumn TItem="Order" Property="CustomerName" Title="@L["entity.customer"]" />
+        <RadzenDataGridColumn TItem="Order" Property="EmployeeName" Title="@L["entity.employee"]" Width="160px" />
+        <RadzenDataGridColumn TItem="Order" Property="OrderDate" Title="@L["field.orderDate"]" Width="120px" FormatString="{0:yyyy-MM-dd}" />
+        <RadzenDataGridColumn TItem="Order" Property="ShipperName" Title="@L["entity.shipper"]" Width="150px" />
+        <RadzenDataGridColumn TItem="Order" Property="Freight" Title="@L["field.freight"]" Width="110px" TextAlign="TextAlign.Right" FormatString="{0:N2}" />
     </ChildContent>
 </DataGrid>

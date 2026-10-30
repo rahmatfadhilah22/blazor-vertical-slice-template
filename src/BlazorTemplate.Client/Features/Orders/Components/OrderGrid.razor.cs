@@ -10,6 +10,7 @@ namespace BlazorTemplate.Client.Features.Orders.Components;
 public partial class OrderGrid : BaseComponent
 {
     [Inject] public ApiClient Api { get; set; } = default!;
+    [Inject] public NavigationManager Nav { get; set; } = default!;
 
     private DataGrid<Order>? _grid;
 
@@ -23,23 +24,9 @@ public partial class OrderGrid : BaseComponent
         return new DataGridPage<Order>(result.Items, result.Total);
     }
 
-    private async Task OpenFormAsync(Order? order)
-    {
-        var guard = new DialogGuard();
-        var parameters = new Dictionary<string, object?> { [nameof(OrderFormDialog.Guard)] = guard };
-        if (order is not null)
-            parameters[nameof(OrderFormDialog.Order)] = order;
-
-        object? saved = await DialogService.OpenAsync<OrderFormDialog>(
-            order is null
-                ? L.Format("common.addEntity", L["entity.order"])
-                : L.Format("common.editEntity", L["entity.order"]),
-            parameters,
-            new DialogOptions { Width = DialogSize.WidthFor(2), CanClose = () => Task.FromResult(!guard.Busy) });
-
-        if (saved is true)
-            await ReloadAsync();
-    }
+    // Order adalah transaksi: form-nya halaman ber-route, bukan modal — bisa di-link.
+    private void OpenForm(Order? order) =>
+        Nav.NavigateTo(order is null ? "/orders/new" : $"/orders/{order.OrderID}");
 
     private async Task DeleteSelectedAsync()
     {

@@ -1,0 +1,85 @@
+@page "/orders/new"
+@page "/orders/{Id:int}"
+@inherits FormDialogBase<Order>
+
+@* Form transaksi = halaman ber-route, bukan modal: dokumen harus bisa di-link, dan 14
+   field tidak muat nyaman di overlay. Route ganda: /orders/new untuk data baru (nomor
+   belum ada), /orders/{Id} untuk data tersimpan. *@
+
+@if (_loading)
+{
+    <div class="rz-display-flex rz-justify-content-center rz-p-6">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
+}
+else if (_notFound)
+{
+    <div class="app-form-card">
+        <EmptyState Message="@L["order.notFound"]" Icon="search_off">
+            <Button Text="@L["common.back"]" Icon="arrow_back"
+                    Click="@(() => Nav.NavigateTo("/orders"))" />
+        </EmptyState>
+    </div>
+}
+else
+{
+    <div class="app-form-card">
+        @* RadzenTemplateForm: tombol Simpan bertipe submit, Submit hanya dipanggil kalau
+           semua validator lolos — sama dengan FormDialog. *@
+        <RadzenTemplateForm TItem="Order" Data="@_model" Submit="@SaveAsync">
+            @* Aksi di atas, rata kiri: Simpan jadi langkah pertama, Kembali di kanannya. *@
+            <div class="app-form-actions app-form-actions-top">
+                <Button Text="@L["common.save"]" ButtonType="ButtonType.Submit" IsBusy="@Guard.Busy" />
+                <Button Text="@L["common.back"]" Icon="arrow_back" Variant="ButtonVariant.Light"
+                        Disabled="@Guard.Busy" Click="@(() => Nav.NavigateTo("/orders"))" />
+            </div>
+
+            <div class="app-form-grid" style="--app-form-columns:3">
+                @* TValue="string" bukan "string?": Razor menulis tipe itu apa adanya di kode
+                   generated yang ber-#nullable disable, sehingga memicu 24 warning CS8669.
+                   AllowClear tetap boleh mengosongkan; null masuk ke _model.CustomerID (string?). *@
+                <FormDropDown Label="@L["field.customerID"]" Name="CustomerID" TValue="string"
+                              Data="@_customers" TextProperty="CompanyName" ValueProperty="CustomerID"
+                              LoadData="LoadCustomersAsync"
+                              @bind-Value="_model.CustomerID" Error="@ErrorFor("CustomerID")" />
+                <FormDropDown Label="@L["field.employeeID"]" Name="EmployeeID" TValue="int?"
+                              Data="@_employees" TextProperty="LastName" ValueProperty="EmployeeID"
+                              LoadData="LoadEmployeesAsync"
+                              @bind-Value="_model.EmployeeID" Error="@ErrorFor("EmployeeID")" />
+                <FormDropDown Label="@L["field.shipVia"]" Name="ShipVia" TValue="int?"
+                              Data="@_shippers" TextProperty="CompanyName" ValueProperty="ShipperID"
+                              LoadData="LoadShippersAsync"
+                              @bind-Value="_model.ShipVia" Error="@ErrorFor("ShipVia")" />
+
+                <FormDatePicker Label="@L["field.orderDate"]" Name="OrderDate" TValue="DateOnly?"
+                                @bind-Value="_model.OrderDate" Error="@ErrorFor("OrderDate")" />
+                <FormDatePicker Label="@L["field.requiredDate"]" Name="RequiredDate" TValue="DateOnly?"
+                                @bind-Value="_model.RequiredDate" Error="@ErrorFor("RequiredDate")" />
+                <FormDatePicker Label="@L["field.shippedDate"]" Name="ShippedDate" TValue="DateOnly?"
+                                @bind-Value="_model.ShippedDate" Error="@ErrorFor("ShippedDate")" />
+
+                <FormNumeric Label="@L["field.freight"]" Name="Freight" TNumber="decimal?"
+                             @bind-Value="_model.Freight" Error="@ErrorFor("Freight")" />
+                <FormTextBox Label="@L["field.shipName"]" Name="ShipName" MaxLength="40"
+                             @bind-Value="_model.ShipName" Error="@ErrorFor("ShipName")" />
+                <FormTextBox Label="@L["field.shipCountry"]" Name="ShipCountry" MaxLength="15"
+                             @bind-Value="_model.ShipCountry" Error="@ErrorFor("ShipCountry")" />
+
+                <FormTextBox Label="@L["field.shipCity"]" Name="ShipCity" MaxLength="15"
+                             @bind-Value="_model.ShipCity" Error="@ErrorFor("ShipCity")" />
+                <FormTextBox Label="@L["field.shipRegion"]" Name="ShipRegion" MaxLength="15"
+                             @bind-Value="_model.ShipRegion" Error="@ErrorFor("ShipRegion")" />
+                <FormTextBox Label="@L["field.shipPostalCode"]" Name="ShipPostalCode" MaxLength="10"
+                             @bind-Value="_model.ShipPostalCode" Error="@ErrorFor("ShipPostalCode")" />
+
+                <FormTextBox Label="@L["field.shipAddress"]" Name="ShipAddress" MaxLength="60" FullWidth
+                             @bind-Value="_model.ShipAddress" Error="@ErrorFor("ShipAddress")" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_message))
+            {
+                <FieldError Message="@_message" />
+            }
+        </RadzenTemplateForm>
+    </div>
+}

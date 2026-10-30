@@ -17,6 +17,7 @@
               IsBusy="@IsBusy"
               BusyText="@(BusyText ?? L["common.saving"])"
               Click="@Click"
+              aria-label="@AriaLabel"
               class="@Class" />
 
 @code {
@@ -41,6 +42,9 @@
     [Parameter] public EventCallback<MouseEventArgs> Click { get; set; }
 
     [Parameter] public string? Class { get; set; }
+
+    /// <summary>Nama tombol untuk screen reader. Wajib untuk tombol ikon saja.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
 
     // ---- Pemetaan ke Radzen: ubah di sini, semua tombol ikut berubah ----
 

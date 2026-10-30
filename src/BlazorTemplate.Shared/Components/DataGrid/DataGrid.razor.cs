@@ -41,8 +41,21 @@ public partial class DataGrid<TItem> : BaseComponent where TItem : notnull
     /// </summary>
     [Parameter] public EventCallback SelectionChanged { get; set; }
 
+    /// <summary>
+    /// Klik baris (di luar checkbox) — mis. buka halaman detail. Null = baris tidak interaktif.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> RowClick { get; set; }
+
     /// <summary>Baris yang sedang terpilih. Pilihan dikosongkan setiap kali data dimuat ulang.</summary>
     public IReadOnlyCollection<TItem> SelectedItems => _selected;
+
+    // Teruskan sebagai callback kosong saat tidak dipakai: Radzen memasang handler <tr>
+    // begitu callback punya delegate, walau lambda-nya sendiri tidak melakukan apa-apa.
+    private EventCallback<DataGridRowMouseEventArgs<TItem>> RowClickInternal =>
+        RowClick.HasDelegate
+            ? EventCallback.Factory.Create<DataGridRowMouseEventArgs<TItem>>(
+                this, args => RowClick.InvokeAsync(args.Data))
+            : default;
 
     public int SelectedCount => _selected.Count;
 

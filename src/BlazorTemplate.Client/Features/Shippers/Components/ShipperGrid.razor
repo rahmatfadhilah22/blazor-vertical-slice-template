@@ -3,19 +3,19 @@
           SearchPlaceholder="@L.Format("common.searchFor", L["entity.shippers"])"
           LoadData="LoadAsync" SelectionChanged="StateHasChanged">
     <Toolbar>
-        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Success"
+        <Button Text="@L["common.add"]" Icon="add" Variant="ButtonVariant.Primary"
                 Click="@(() => OpenFormAsync(null))" />
-        <Button Text="@DeleteText" Icon="delete" Variant="ButtonVariant.Danger"
+        <Button Text="@DeleteText" Icon="delete" Variant="@(_grid?.SelectedCount is > 0 ? ButtonVariant.Danger : ButtonVariant.Light)"
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
     <ChildContent>
-        <RadzenDataGridColumn TItem="Shipper" Property="ShipperID" Title="ID" Width="10%" />
-        <RadzenDataGridColumn TItem="Shipper" Property="CompanyName" Title="@L["field.companyName"]" Width="55%" />
-        <RadzenDataGridColumn TItem="Shipper" Property="Phone" Title="@L["field.phone"]" Width="20%" />
+        <RadzenDataGridColumn TItem="Shipper" Property="ShipperID" Title="ID" Width="72px" TextAlign="TextAlign.Right" />
+        <RadzenDataGridColumn TItem="Shipper" Property="CompanyName" Title="@L["field.companyName"]" />
+        <RadzenDataGridColumn TItem="Shipper" Property="Phone" Title="@L["field.phone"]" Width="150px" />
         <RadzenDataGridColumn TItem="Shipper" Context="shipper" Title="@L["common.action"]" Sortable="false"
-                              Filterable="false" Width="15%" TextAlign="TextAlign.Center">
+                              Filterable="false" Width="88px" TextAlign="TextAlign.Center">
             <Template>
-                <Button Icon="edit" Size="ButtonSize.Small" Click="@(() => OpenFormAsync(shipper))" />
+                <Button Icon="edit" Variant="ButtonVariant.Light" AriaLabel="@L["common.edit"]" Size="ButtonSize.Small" Click="@(() => OpenFormAsync(shipper))" />
             </Template>
         </RadzenDataGridColumn>
     </ChildContent>

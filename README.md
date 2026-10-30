@@ -114,9 +114,10 @@ src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
   Features/Categories/Pages/            CategoryList — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
+  Features/Orders/Pages/OrderList.razor    daftar + OrderForm (`/orders/new`, `/orders/{id}`)
   Features/<Entity>/Pages|Components/   pola yang sama untuk Products, Suppliers, Shippers,
                                         Customers, Regions, Territories, UsStates,
-                                        CustomerDemographics, Employees, Orders
+                                        CustomerDemographics, Employees
   Layout/MainLayout.razor               RadzenTheme (material) + RadzenComponents + menu
   Layout/PlainLayout.razor              kerangka tanpa menu, untuk halaman 404
   Routes.razor                          router + halaman NotFound
@@ -189,7 +190,7 @@ Batasnya ikut jenis data, bukan jumlah field.
 | Jenis | Bentuk form | Contoh |
 |---|---|---|
 | Master / konfigurasi | **modal** (`DialogService.OpenAsync`) | Category, Customer, Supplier, Satuan, Gudang |
-| Transaksi / dokumen | **halaman ber-route** (`/sales/{id}`) | Sales Order, Purchase Order, Invoice, Stock Opname |
+| Transaksi / dokumen | **halaman ber-route** (`/orders/{id}`) | Order |
 
 Alasan memilih modal untuk master: setelah simpan pengguna kembali ke grid dengan filter dan halaman yang sama, lalu lanjut input baris berikutnya. Halaman terpisah memaksa kembali ke halaman 1 setiap kali.
 
@@ -199,7 +200,26 @@ Alasan memilih halaman untuk transaksi:
 - Refresh saat input 20 baris tidak boleh menghapus semuanya; halaman bisa restore/autosave.
 - Print dan lampiran butuh halaman penuh, bukan overlay.
 
-Pola dokumen: daftar → klik baris → `/sales/{id}`. Setelah simpan **tetap di halaman itu** (bukan kembali ke daftar), karena setelah header biasanya langsung isi item.
+Pola dokumen: daftar → klik **baris** pesanan → `/orders/{id}`. Setelah simpan **tetap di halaman itu** (bukan kembali ke daftar), karena setelah header biasanya langsung isi item.
+
+Satu-satunya contoh nyata saat ini: `OrderForm` (`Features/Orders/Pages/`). Dua route —
+`/orders/new` untuk data baru (nomor belum ada), `/orders/{id}` untuk data tersimpan.
+Insert diarahkan ke `/orders/{id}` hasil balikan server; id tidak pernah dibuat di klien.
+Aksi form ada di **atas kartu, rata kiri**: `Simpan` lalu `Kembali`. Tombol submit
+harus tetap di dalam `RadzenTemplateForm`, jadi blok aksi diletakkan sebelum grid field,
+bukan di `PageHeader`. Halaman ini tidak memakai judul: konteksnya sudah jelas dari
+nomor yang diklik. Tidak ada Batal terpisah — meninggalkan form tanpa menyimpan sama
+dengan kembali.
+
+- Halaman memakai `FormDialogBase<T>` yang sama dengan dialog: state simpan, `Guard.Busy`,
+  error per field, dan pembersihan draft tetap satu tempat. Bedanya hanya
+  `OnSavedAsync` — dialog menutup dirinya, halaman navigasi ke URL hasil simpan.
+- Layout field memakai `.app-form-grid` + `.app-form-card` yang sudah ada; `FormDialog` tidak
+  dipakai karena footer/penutupnya terikat ke dialog. Kolom per baris: **3** (14 field Order
+  turun 5 baris, `ShipAddress` selebar baris).
+- `DialogGuard`/`CanClose` tidak berlaku di halaman: pengguna bisa pindah halaman di tengah
+  request simpan. `NavigationLock` tidak menahan navigasi router di WASM, jadi ini gap yang
+  dicatat, bukan dipaksakan.
 
 Konsekuensi: `CategoryFormDialog` tetap modal. Jangan menambah parameter "buka halaman" ke `DataGrid` — form halaman adalah komponen + route tersendiri.
 
@@ -348,14 +368,15 @@ Warna terpusat di `src/BlazorTemplate.Client.App/wwwroot/css/theme.css`. Itu men
 
 ```css
 :root:root {
-  --rz-primary: #1565C0;        /* biru, dipakai header, tombol primary, dsb. */
+  --rz-primary: #1565C0;        /* biru, dipakai menu aktif, fokus, dan aksi utama. */
   --rz-secondary: #455A64;      /* biru abu-abu */
-  --rz-header-background-color: var(--rz-primary);
+  --rz-header-background-color: var(--rz-base-background-color);
+  --rz-header-color: var(--rz-base-800);
   --rz-border-radius: 8px;      /* tombol, input, dialog, kartu */
 }
 ```
 
-Warna status (success/warning/danger/info) masih default Material. Spesifikasi `:root:root` (dobel) disengaja: `RadzenTheme` menyuntikkan stylesheet theme saat runtime, dan dobel menjamin override kita menang tanpa mempedulikan urutan.
+Header sengaja netral: data adalah subjek halaman, jadi warna brand hanya muncul di titik aksi. Warna status (success/warning/danger/info) **bukan** default Material; semua pasangan teks putih di atasnya ≥ 4.5:1 (WCAG AA). `info` dibuat teal supaya tidak tertukar dengan `primary`. Spesifikasi `:root:root` (dobel) disengaja: `RadzenTheme` menyuntikkan stylesheet theme saat runtime, dan dobel menjamin override kita menang tanpa mempedulikan urutan.
 
 ### Tampilan DataGrid
 
@@ -363,7 +384,12 @@ Grid tidak tampil sebagai tabel berbingkai penuh. Chrome bawaannya dimatikan lew
 
 Yang perlu diingat saat mengubah tampilan:
 
-- Garis antar baris `1px var(--rz-base-200)`; header abu (`--rz-base-50`), huruf 11px kapital abu-abu. Header ber-padding 0.75rem, sama dengan sel body, jadi judul kolom lurus dengan isinya.
+- Garis antar baris `1px var(--rz-base-200)`; header abu (`--rz-base-100`), huruf 13px kapital abu-abu. Header ber-padding 0.875rem (sel body 0.75rem) supaya terbaca sebagai pita, bukan baris data.
+- Kolom aksi selebar tetap 88px, bukan persen: ikon 24px tidak butuh 10–15% lebar tabel. Satu kolom teks dibiarkan tanpa `Width` agar menyerap sisa ruang dan tidak memunculkan scroll horizontal.
+- Semua grid bisa **resize** (tarik tepi header) dan **reorder** (geser header) — dipasang sekali di `DataGrid`, bukan per fitur. Kolom checkbox dikecualikan agar pilihan baris tidak bisa dipindah.
+- `RowClick` opsional: saat diisi, seluruh baris jadi target klik (hover biru muda, kursor tangan). Checkbox dan tombol aksi di sel memakai `@onclick:stopPropagation` supaya tidak ikut membuka detail.
+- Grid transaksi menampilkan **nama**, bukan ID relasi: `Orders/GetRows` di backend join ke `customers`/`employees`/`shippers` dan mengirim `CustomerName`/`EmployeeName`/`ShipperName`. ID tetap ada di payload untuk form, tapi tidak pernah jadi kolom.
+- Kolom angka rata kanan dan memakai `font-variant-numeric: tabular-nums`; uang diformat `N2`.
 - Baris terpilih diberi latar `--rz-primary-lighter`, dan kolom checkbox 56px supaya checkbox 20px tetap punya ruang.
 - Input pencarian memakai ikon kaca pembesar SVG inline (data URI), bukan file gambar — tidak ada request tambahan.
 - Input (termasuk form dialog) diubah dari garis-bawah Material ke kotak ber-border; saat fokus border tetap ada, hanya berubah jadi primary (`--rz-input-focus-border`), karena aturan fokus Material menghapus border.

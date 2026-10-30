@@ -28,6 +28,16 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
     }
 
     /// <summary>
+    /// Setelah simpan sukses. Default: tutup dialog. Halaman ber-route meng-override
+    /// untuk navigasi ke id hasil insert.
+    /// </summary>
+    protected virtual Task OnSavedAsync(T? saved)
+    {
+        DialogService.Close(true);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Simpan model. <paramref name="id"/> null = insert, selain itu update.
     /// URL action dioper pemanggil karena nama action tiap backend bisa berbeda.
     /// </summary>
@@ -41,13 +51,14 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
         Guard.Busy = true;
         try
         {
+            T? saved = null;
             if (id is null)
-                await Api.PostAsync<T>(insertUrl, model);
+                saved = await Api.PostAsync<T>(insertUrl, model);
             else
                 await Api.PutAsync($"{updateUrl}/{id}", model);
 
             DraftStore.Clear<T>();
-            DialogService.Close(true);
+            await OnSavedAsync(saved);
         }
         catch (ApiException ex)
         {

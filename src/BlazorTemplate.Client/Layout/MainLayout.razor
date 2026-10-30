@@ -9,7 +9,10 @@
     <RadzenHeader>
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-py-2 rz-w-100">
             <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)" />
-            <RadzenText TextStyle="TextStyle.H6" Class="rz-mb-0">BlazorTemplate</RadzenText>
+            <span class="app-brand">
+                <span class="app-brand-mark" aria-hidden="true"><RadzenIcon Icon="table_chart" /></span>
+                <span class="app-header-title">BlazorTemplate</span>
+            </span>
             @* Bahasa: dropdown didorong ke kanan header, diberi jarak 1rem dari tepi. *@
             <div class="rz-ml-auto rz-pe-4">
                 <LanguageSwitch />

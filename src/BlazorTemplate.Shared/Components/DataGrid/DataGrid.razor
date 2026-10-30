@@ -15,7 +15,7 @@
 @inherits BaseComponent
 
 @* Satu kartu untuk toolbar + tabel + pager, bukan tiga blok terpisah yang mengambang. *@
-<div class="app-datagrid">
+<div class="app-datagrid @(RowClick.HasDelegate ? "app-datagrid-clickable" : "")">
 @if (Toolbar is not null || AllowSearch)
 {
     <div class="app-datagrid-toolbar">
@@ -37,13 +37,14 @@
                 LoadData="LoadDataInternal" AllowPaging IsLoading="_isLoading"
                 @bind-PageSize="_pageSize" PageSizeOptions="@PageSizeOptions"
                 PagerHorizontalAlign="HorizontalAlign.Center"
+                AllowColumnResize AllowColumnReorder RowClick="RowClickInternal"
                 Style="width:100%">
     <Columns>
         @if (AllowSelection)
         {
             @* 56px: 1.25rem checkbox + padding sel 1rem kiri-kanan. *@
             <RadzenDataGridColumn TItem="TItem" Width="56px" Sortable="false" Filterable="false"
-                                  TextAlign="TextAlign.Center">
+                                  Resizable="false" Reorderable="false" TextAlign="TextAlign.Center">
                 <HeaderTemplate>
                     @* TriState=false + nilai bool?: klik hanya true/false, tapi null tetap
                        tampil sebagai garis (sebagian terpilih). TriState=true akan memutar
@@ -53,9 +54,12 @@
                                     InputAttributes="@(new Dictionary<string, object> { { "aria-label", L["grid.selectAll"] } })" />
                 </HeaderTemplate>
                 <Template Context="item">
-                    <RadzenCheckBox TValue="bool" Value="@_selected.Contains(item)"
-                                    Change="@(value => Toggle(item, value))"
-                                    InputAttributes="@(new Dictionary<string, object> { { "aria-label", L["grid.selectRow"] } })" />
+                    @* Cegah klik checkbox ikut memicu RowClick (buang pilihan baris). *@
+                    <span @onclick:stopPropagation="true">
+                        <RadzenCheckBox TValue="bool" Value="@_selected.Contains(item)"
+                                        Change="@(value => Toggle(item, value))"
+                                        InputAttributes="@(new Dictionary<string, object> { { "aria-label", L["grid.selectRow"] } })" />
+                    </span>
                 </Template>
             </RadzenDataGridColumn>
         }

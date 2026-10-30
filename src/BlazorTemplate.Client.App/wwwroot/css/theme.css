@@ -28,42 +28,71 @@
     --rz-secondary-darker: #263238;
     --rz-on-secondary: #ffffff;
 
-    /* ===== STATUS (nilai bawaan Material, dipertahankan) ===== */
-    --rz-info: #2196F3;
-    --rz-info-light: #4DABF5;
-    --rz-info-lighter: rgba(33, 150, 243, 0.2);
-    --rz-info-dark: #1A78C2;
-    --rz-info-darker: #1666A5;
+    /* ===== STATUS =====
+     * Bukan nilai bawaan Material: teks putih di atas hijau/oranye/merah bawaan
+     * hanya 2.2–3.7:1 (gagal WCAG AA). Semua nilai di bawah ≥ 4.5:1 dengan putih.
+     * Info dibuat teal, bukan biru, supaya tidak tertukar dengan primary.
+     */
+    --rz-info: #0E7490;
+    --rz-info-light: #0E8CA8;
+    --rz-info-lighter: rgba(14, 116, 144, 0.12);
+    --rz-info-dark: #0A5A70;
+    --rz-info-darker: #084A5C;
     --rz-on-info: #ffffff;
 
-    --rz-success: #4CAF50;
-    --rz-success-light: #70BF73;
-    --rz-success-lighter: rgba(76, 175, 80, 0.16);
-    --rz-success-dark: #3D8C40;
-    --rz-success-darker: #347736;
+    --rz-success: #2E7D32;
+    --rz-success-light: #388E3C;
+    --rz-success-lighter: rgba(46, 125, 50, 0.12);
+    --rz-success-dark: #1B5E20;
+    --rz-success-darker: #14501A;
     --rz-on-success: #ffffff;
 
-    --rz-warning: #FF9800;
-    --rz-warning-light: #FFAD33;
-    --rz-warning-lighter: rgba(255, 152, 0, 0.2);
-    --rz-warning-dark: #CC7A00;
-    --rz-warning-darker: #AD6700;
+    --rz-warning: #B45309;
+    --rz-warning-light: #C96A18;
+    --rz-warning-lighter: rgba(180, 83, 9, 0.14);
+    --rz-warning-dark: #92400E;
+    --rz-warning-darker: #78350F;
     --rz-on-warning: #ffffff;
 
-    --rz-danger: #F44336;
-    --rz-danger-light: #F6695E;
-    --rz-danger-lighter: rgba(244, 67, 54, 0.2);
-    --rz-danger-dark: #C3362B;
-    --rz-danger-darker: #A62E25;
+    --rz-danger: #C62828;
+    --rz-danger-light: #D32F2F;
+    --rz-danger-lighter: rgba(198, 40, 40, 0.12);
+    --rz-danger-dark: #B71C1C;
+    --rz-danger-darker: #8E1616;
     --rz-on-danger: #ffffff;
 
     /* ===== PERMUKAAN ===== */
-    /* Header memakai primary secara bawaan; ganti ke var(--rz-base-800)
-       kalau ingin navbar netral dan warna brand hanya di tombol. */
-    --rz-header-background-color: var(--rz-primary);
-    --rz-header-color: var(--rz-on-primary);
-    --rz-body-background-color: var(--rz-base-100);
+    /* Header netral: warna brand disimpan untuk menu aktif, fokus, dan aksi utama.
+       Garis bawah tipis menggantikan shadow bawaan supaya tidak terlihat melayang. */
+    --rz-header-background-color: var(--rz-base-background-color);
+    --rz-header-color: var(--rz-base-800);
+    --rz-header-border: 1px solid var(--rz-base-200);
+    --rz-header-shadow: none;
+    /* Kertas sedikit kebiruan: kartu putih dan menu aktif jadi punya kontras. */
+    --rz-body-background-color: #F1F4F9;
     --rz-sidebar-background-color: var(--rz-base-background-color);
+
+    /* Toggle sidebar: bawaan Material memakai --rz-on-primary (putih), tidak terlihat
+       di header putih. */
+    --rz-sidebar-toggle-color: var(--rz-base-600);
+    --rz-sidebar-toggle-hover-color: var(--rz-primary-dark);
+    --rz-sidebar-toggle-hover-background-color: var(--rz-primary-lighter);
+
+    /* Menu: item aktif adalah satu-satunya bidang warna penuh di shell. */
+    --rz-panel-menu-item-color: var(--rz-base-700);
+    --rz-panel-menu-item-hover-color: var(--rz-primary-dark);
+    --rz-panel-menu-item-hover-background-color: var(--rz-primary-lighter);
+    --rz-panel-menu-item-active-color: var(--rz-on-primary);
+    --rz-panel-menu-item-active-background-color: var(--rz-primary);
+    --rz-panel-menu-item-active-indicator: transparent;
+    --rz-panel-menu-item-border-radius: 8px;
+    --rz-panel-menu-item-margin-inline: 0.5rem;
+    /* Level 2 punya set token sendiri; tanpa ini item anak tetap ungu muda. */
+    --rz-panel-menu-item-2nd-level-color: var(--rz-base-700);
+    --rz-panel-menu-item-2nd-level-hover-color: var(--rz-primary-dark);
+    --rz-panel-menu-item-2nd-level-hover-background-color: var(--rz-primary-lighter);
+    --rz-panel-menu-item-2nd-level-active-color: var(--rz-on-primary);
+    --rz-panel-menu-item-2nd-level-active-background-color: var(--rz-primary);
 
     --rz-text-color: var(--rz-base-800);
     --rz-text-secondary-color: var(--rz-base-700);
@@ -127,6 +156,45 @@
     --rz-pager-border: 1px solid var(--rz-base-200);
 }
 
+/* ===== Header =====
+ * Nama aplikasi adalah chrome, bukan judul halaman: lebih kecil dan lebih tenang
+ * dari PageHeader. Satu-satunya bidang warna di header adalah tanda aplikasi.
+ */
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.app-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    background-color: var(--rz-primary);
+    color: var(--rz-on-primary);
+}
+
+.app-brand-mark .rzi {
+    font-size: 1.125rem;
+}
+
+.app-header-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* Judul halaman: H4 bawaan Material ber-weight 400 dan terasa seperti teks biasa.
+   Spesifisitas :root:root agar menang atas .rz-text-h4 yang disuntikkan saat runtime. */
+:root:root .app-page-title {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
 /* ===== Bingkai DataGrid =====
  * Satu permukaan untuk toolbar + tabel + pager. Kelas .app-datagrid dipasang oleh
  * komponen DataGrid di BlazorTemplate.Shared; pindahkan blok ini ke stylesheet host
@@ -138,6 +206,16 @@
     border-radius: 12px;
     background-color: var(--rz-base-background-color);
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 14px 32px -22px rgba(16, 24, 40, 0.45);
+}
+
+/* Baris yang seluruhnya bisa diklik (mis. daftar Orders). Warna hover memakai
+   variable grid supaya baris terpilih tetap menang lewat aturan di bawah. */
+.app-datagrid-clickable .rz-data-row {
+    cursor: pointer;
+}
+
+.app-datagrid-clickable .rz-grid-table tbody tr.rz-data-row:hover > td {
+    background-color: var(--rz-primary-lighter);
 }
 
 .app-datagrid-toolbar {
@@ -161,6 +239,33 @@
 
 .app-datagrid .rz-grid-table thead th {
     letter-spacing: 0.04em;
+}
+
+/* Angka sejajar per digit, juga saat kolom berisi campuran angka dan teks. */
+.app-datagrid .rz-grid-table tbody td {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Badge status (mis. Discontinued). Latar memakai token -lighter, teks token -dark,
+   jadi pasangan warnanya selalu lolos kontras tanpa menghitung ulang. */
+.app-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.app-badge-success {
+    background-color: var(--rz-success-lighter);
+    color: var(--rz-success-dark);
+}
+
+.app-badge-danger {
+    background-color: var(--rz-danger-lighter);
+    color: var(--rz-danger-dark);
 }
 
 /* Baris terpilih ikut berwarna. Grid memakai checkbox sendiri (bukan fitur selection
@@ -227,6 +332,27 @@
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--rz-base-200);
+}
+
+/* Halaman transaksi: aksi di atas form, rata kiri. */
+.app-form-actions-top {
+    justify-content: flex-start;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-top: 0;
+    padding-bottom: 1rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--rz-base-200);
+}
+
+/* Halaman ber-route (transaksi): kartu yang sama seperti .app-datagrid, supaya form
+   dan daftar terlihat satu permukaan. Dialog tidak memakai ini — dialoglah kartunya. */
+.app-form-card {
+    padding: 1.5rem;
+    border: 1px solid var(--rz-base-200);
+    border-radius: 12px;
+    background-color: var(--rz-base-background-color);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 14px 32px -22px rgba(16, 24, 40, 0.45);
 }
 
 @media (max-width: 640px) {

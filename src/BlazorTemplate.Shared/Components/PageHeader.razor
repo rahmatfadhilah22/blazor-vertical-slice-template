@@ -1,7 +1,7 @@
 @* Judul halaman + area aksi (tombol tambah, filter, dsb). Dipakai di setiap halaman fitur. *@
 <div class="rz-display-flex rz-justify-content-space-between rz-align-items-center rz-mb-4">
     <div>
-        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H1" Class="rz-mb-0">@Title</RadzenText>
+        <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" Class="app-page-title rz-mb-0">@Title</RadzenText>
         @if (!string.IsNullOrWhiteSpace(Subtitle))
         {
             <RadzenText TextStyle="TextStyle.Body2" Class="rz-text-secondary-color rz-mb-0">@Subtitle</RadzenText>
