@@ -13,21 +13,20 @@ public partial class CategoryFormDialog : FormDialogBase<Category>
     [Parameter] public Category? Category { get; set; }
     private Category _model = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Wajib: BaseComponent memasang langganan perubahan bahasa di sini.
         base.OnInitialized();
 
         if (Category is null)
+        {
             _model = DraftStore.GetOrCreate<Category>();
-
-        if (Category is null)
             return;
+        }
 
-        _model.CategoryID = Category.CategoryID;
-        _model.CategoryName = Category.CategoryName;
-        _model.Description = Category.Description;
-        _model.Picture = Category.Picture;
+        // Ambil baris penuh dari GetRow: GetRows sengaja tidak mengirim picture
+        // (kolom besar), jadi menyalin dari baris grid akan mengosongkan gambar.
+        _model = await Api.GetAsync<Category>($"Categories/GetRow/{Category.CategoryID}");
     }
     private Task SaveAsync(Category model)
     {

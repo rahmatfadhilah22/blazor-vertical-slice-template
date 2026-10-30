@@ -1,0 +1,119 @@
+@inherits FormInputBase<string?>
+@* Unggah gambar: pilih file -> base64, pratinjau, unduh, hapus.
+ *
+ * Nilai berupa base64 string karena itulah bentuk byte[] di JSON — model frontend
+ * (mis. Category.Picture) menyimpannya apa adanya, tanpa konversi tambahan.
+ *
+ * Tidak memakai FormField: FormField membungkus isi dengan <label>, dan label
+ * bertumpuk membuat klik tombol ikut membuka pemilih file. Markup field ditulis
+ * ulang di sini dengan kelas CSS yang sama supaya tampilannya tetap seragam.
+ *@
+<div class="app-form-field @(FullWidth ? "app-form-field-full" : null)">
+    <span class="app-form-label-text">@Label</span>
+
+    <div class="app-image-field">
+        <div class="app-image-preview">
+            @if (HasImage)
+            {
+                <img src="@DataUrl" alt="@Label" />
+            }
+            else if (HasValue)
+            {
+                <span class="app-image-empty">@L["file.noPreview"]</span>
+            }
+            else
+            {
+                <RadzenIcon Icon="image" Style="font-size:2rem;opacity:.4" />
+            }
+        </div>
+
+        <div class="app-image-actions">
+            <label class="app-file-button">
+                @(HasValue ? L["file.change"] : L["file.choose"])
+                <InputFile class="app-file-input" accept="@Accept" OnChange="OnFileSelected" disabled="@Disabled" />
+            </label>
+
+            @if (HasValue)
+            {
+                <a class="app-file-button" href="@DataUrl" download="@DownloadName">@L["file.download"]</a>
+                <button type="button" class="app-file-button app-file-button-danger" @onclick="ClearAsync">
+                    @L["file.remove"]
+                </button>
+            }
+        </div>
+
+        <p class="app-image-hint">@L.Format("file.hint", MaxKb)</p>
+    </div>
+
+    <FieldError Message="@(Error ?? _localError)" />
+</div>
+
+@code {
+    /// <summary>Batas ukuran file. Juga batas yang ditegakkan <c>OpenReadStream</c>.</summary>
+    [Parameter] public int MaxKb { get; set; } = 1024;
+
+    [Parameter] public string Accept { get; set; } = "image/png,image/jpeg,image/gif,image/bmp,image/webp";
+
+    private string? _localError;
+
+    private bool HasValue => !string.IsNullOrEmpty(Value);
+    private bool HasImage => Mime?.StartsWith("image/") == true;
+
+    // MIME ditebak dari beberapa byte pertama base64: base64 tidak membawa tipe file.
+    private string? Mime => Value switch
+    {
+        null or "" => null,
+        _ when Value.StartsWith("iVBORw0KGgo") => "image/png",
+        _ when Value.StartsWith("/9j/") => "image/jpeg",
+        _ when Value.StartsWith("R0lGOD") => "image/gif",
+        _ when Value.StartsWith("Qk") => "image/bmp",
+        _ when Value.StartsWith("UklGR") => "image/webp",
+        _ => "application/octet-stream",
+    };
+
+    private string Extension => Mime switch
+    {
+        "image/png" => "png",
+        "image/jpeg" => "jpg",
+        "image/gif" => "gif",
+        "image/bmp" => "bmp",
+        "image/webp" => "webp",
+        _ => "bin",
+    };
+
+    private string? DataUrl => HasValue ? $"data:{Mime};base64,{Value}" : null;
+    private string DownloadName => $"gambar.{Extension}";
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        _localError = null;
+        var file = e.File;
+        var limit = MaxKb * 1024L;
+
+        if (file.Size > limit)
+        {
+            _localError = L.Format("file.tooLarge", MaxKb);
+            return;
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream(limit);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            Value = Convert.ToBase64String(ms.ToArray());
+            await ValueChanged.InvokeAsync(Value);
+        }
+        catch (Exception)
+        {
+            _localError = L["common.error"];
+        }
+    }
+
+    private async Task ClearAsync()
+    {
+        _localError = null;
+        Value = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+}

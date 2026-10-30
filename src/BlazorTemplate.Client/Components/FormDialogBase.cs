@@ -28,11 +28,12 @@ public abstract class FormDialogBase<T> : BaseComponent where T : class
     }
 
     /// <summary>
-    /// Setelah simpan sukses. Default: tutup dialog. Halaman ber-route meng-override
-    /// untuk navigasi ke id hasil insert.
+    /// Setelah simpan sukses. Default: beri notifikasi dan tutup dialog. Halaman ber-route
+    /// meng-override untuk navigasi ke id hasil insert (dan memanggil Toast sendiri).
     /// </summary>
     protected virtual Task OnSavedAsync(T? saved)
     {
+        Toast.Saved(NotificationService, L);
         DialogService.Close(true);
         return Task.CompletedTask;
     }

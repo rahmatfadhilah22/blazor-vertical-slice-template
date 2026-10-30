@@ -1,0 +1,22 @@
+@* Pembungkus RadzenTabs. Satu tempat kalau tampilan tab aplikasi perlu diubah.
+ *
+ * Namanya TabView, bukan Tabs, karena <Tabs> adalah nama slot RenderFragment milik
+ * RadzenTabs — komponen bernama Tabs akan menutupi slot itu di seluruh aplikasi.
+ *
+ * Pemakaian:
+ *   <TabView @bind-SelectedIndex="_tab">
+ *       <TabItem Text="Profil">...</TabItem>
+ *       <TabItem Text="Pesanan">...</TabItem>
+ *   </TabView>
+ *@
+<RadzenTabs SelectedIndex="@SelectedIndex" SelectedIndexChanged="@SelectedIndexChanged"
+            TabPosition="@TabPosition" Class="app-tabs">
+    <Tabs>@ChildContent</Tabs>
+</RadzenTabs>
+
+@code {
+    [Parameter] public int SelectedIndex { get; set; }
+    [Parameter] public EventCallback<int> SelectedIndexChanged { get; set; }
+    [Parameter] public TabPosition TabPosition { get; set; } = TabPosition.Top;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

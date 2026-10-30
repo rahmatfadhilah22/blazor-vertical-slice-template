@@ -10,4 +10,7 @@
                   Placeholder="@L["common.optional"]"
                   @bind-Value="_model.Description"
                   Error="@ErrorFor("Description")" />
+
+    <FormImage Label="@L["field.picture"]" FullWidth
+               @bind-Value="_model.Picture" Error="@ErrorFor("Picture")" />
 </FormDialog>

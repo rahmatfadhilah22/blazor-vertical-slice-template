@@ -1,0 +1,115 @@
+@page "/components"
+@inherits BaseComponent
+@* Halaman contoh komponen shared. Data di sini dummy dan tidak menyentuh API —
+   fungsinya sebagai referensi pemakaian, bukan fitur aplikasi. *@
+
+<PageHeader Title="@L["showcase.title"]" Subtitle="@L["showcase.subtitle"]" />
+
+<div class="app-showcase">
+    <section class="app-form-card">
+        <h2 class="app-showcase-title">@L["showcase.badges"]</h2>
+        <div class="app-showcase-row">
+            <StatusBadge Text="@L["common.yes"]" Tone="BadgeTone.Success" />
+            <StatusBadge Text="@L["showcase.badgePending"]" Tone="BadgeTone.Warning" />
+            <StatusBadge Text="@L["common.no"]" Tone="BadgeTone.Danger" />
+            <StatusBadge Text="@L["showcase.badgeInfo"]" Tone="BadgeTone.Info" />
+            <StatusBadge Text="@L["showcase.badgeDraft"]" Tone="BadgeTone.Neutral" />
+        </div>
+    </section>
+
+    <section class="app-form-card">
+        <h2 class="app-showcase-title">@L["showcase.tabs"]</h2>
+        <TabView @bind-SelectedIndex="_tab">
+            <TabItem Text="@L["showcase.tabOverview"]" Icon="dashboard">
+                <p class="app-showcase-text">@L["showcase.tabOverviewText"]</p>
+            </TabItem>
+            <TabItem Text="@L["showcase.tabForm"]" Icon="edit_note">
+                <p class="app-showcase-text">@L["showcase.tabFormText"]</p>
+            </TabItem>
+            <TabItem Text="@L["showcase.tabActions"]" Icon="bolt">
+                <p class="app-showcase-text">@L["showcase.tabActionsText"]</p>
+            </TabItem>
+        </TabView>
+    </section>
+
+    <section class="app-form-card">
+        <h2 class="app-showcase-title">@L["showcase.tabForm"]</h2>
+        <FormSection Title="@L["showcase.identity"]" Columns="3">
+            <FormTextBox Label="@L["field.name"]" @bind-Value="_form.Name" />
+            <FormLookup TItem="DemoCustomer" TValue="string" Label="@L["entity.customer"]"
+                        TextProperty="Name" ValueProperty="Id" Placeholder="@L["entity.customers"]"
+                        @bind-Value="_form.CustomerId" Load="LoadCustomersAsync" />
+            <FormNumeric TNumber="decimal" Label="@L["field.unitPrice"]" @bind-Value="_form.Amount" />
+        </FormSection>
+        <FormSection Title="@L["showcase.address"]" Columns="3">
+            <FormTextBox Label="@L["field.address"]" @bind-Value="_form.Address" FullWidth />
+            <FormTextBox Label="@L["field.city"]" @bind-Value="_form.City" />
+            <FormTextBox Label="@L["field.postalCode"]" @bind-Value="_form.PostalCode" />
+        </FormSection>
+    </section>
+
+    <section class="app-form-card">
+        <h2 class="app-showcase-title">@L["showcase.image"]</h2>
+        <FormImage Label="@L["field.picture"]" FullWidth MaxKb="512" @bind-Value="_form.Picture" />
+    </section>
+
+    <section class="app-form-card">
+        <h2 class="app-showcase-title">@L["showcase.actions"]</h2>
+        <div class="app-showcase-row">
+            <Button Text="@L["common.save"]" Icon="save" Click="OnSave" />
+            <Button Text="@L["common.delete"]" Icon="delete" Variant="ButtonVariant.Danger" Click="OnDelete" />
+            <Button Text="@L["common.back"]" Icon="arrow_back" Variant="ButtonVariant.Light" />
+        </div>
+    </section>
+</div>
+
+@code {
+    private int _tab;
+    private readonly DemoForm _form = new();
+
+    private static readonly DemoCustomer[] _customers =
+    [
+        new() { Id = "ALFKI", Name = "Alfreds Futterkiste" },
+        new() { Id = "ANATR", Name = "Ana Trujillo Emparedados y helados" },
+        new() { Id = "ANTON", Name = "Antonio Moreno Taquería" },
+        new() { Id = "AROUT", Name = "Around the Horn" },
+        new() { Id = "BERGS", Name = "Berglunds snabbköp" },
+    ];
+
+    // Meniru request API: ada jeda, lalu hasil difilter di server.
+    private static async Task<IEnumerable<DemoCustomer>> LoadCustomersAsync(string? search, CancellationToken ct)
+    {
+        await Task.Delay(300, ct);
+        return string.IsNullOrWhiteSpace(search)
+            ? _customers
+            : _customers.Where(c => c.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void OnSave() => Toast.Saved(NotificationService, L);
+
+    private async Task OnDelete()
+    {
+        if (!await Confirm.DeleteAsync(DialogService, L, L["showcase.confirmMessage"]))
+            return;
+
+        Toast.Deleted(NotificationService, L);
+    }
+
+    public sealed class DemoCustomer
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    private sealed class DemoForm
+    {
+        public string? Name { get; set; }
+        public string CustomerId { get; set; } = "ALFKI";
+        public decimal Amount { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? PostalCode { get; set; }
+        public string? Picture { get; set; } =
+            "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAT0lEQVR42u3PQQkAAAgEsGtkNCsbxQi+hcEKLNXzWgQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQELgvhTuFaODxTGQAAAABJRU5ErkJggg==";
+    }
+}

@@ -54,11 +54,7 @@ public partial class CategoryGrid : BaseComponent
         if (ids.Count == 0)
             return;
 
-        var confirmed = await DialogService.Confirm(
-            L.Format("category.deleteConfirm", ids.Count),
-            L["common.confirm"],
-            new ConfirmOptions { OkButtonText = L["common.delete"], CancelButtonText = L["common.cancel"] });
-        if (confirmed is not true)
+        if (!await Confirm.DeleteAsync(DialogService, L, L.Format("category.deleteConfirm", ids.Count)))
             return;
 
         try
@@ -66,12 +62,12 @@ public partial class CategoryGrid : BaseComponent
             // Satu request: backend menghapus semua atau tidak sama sekali (404 kalau ada id hilang).
             await Api.DeleteAsync("Categories/Delete", ids);
             await ReloadAsync();
-            NotificationService.Notify(NotificationSeverity.Success, L["category.deleted"]);
+            Toast.Deleted(NotificationService, L, L["category.deleted"]);
         }
         catch (Exception ex)
         {
             // Daftar tidak di-reload saat gagal, jadi isinya tetap utuh.
-            NotificationService.Notify(NotificationSeverity.Error, L["common.deleteFailed"], ex.Message);
+            Toast.DeleteFailed(NotificationService, L, ex);
         }
     }
 

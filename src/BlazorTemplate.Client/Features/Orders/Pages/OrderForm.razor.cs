@@ -103,7 +103,7 @@ public partial class OrderForm : FormDialogBase<Order>
     // Insert belum punya nomor, jadi URL-nya baru bisa ditentukan dari balikan server.
     protected override Task OnSavedAsync(Order? saved)
     {
-        NotificationService.Notify(NotificationSeverity.Success, L["common.saved"]);
+        Toast.Saved(NotificationService, L);
         if (saved is not null)
             Nav.NavigateTo($"/orders/{saved.OrderID}");
 

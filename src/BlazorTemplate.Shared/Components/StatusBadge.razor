@@ -1,0 +1,8 @@
+@* Label status berwarna. Warna hanya penanda; status tetap terbaca dari teksnya.
+   Pemakaian: <StatusBadge Text="Lunas" Tone="BadgeTone.Success" /> *@
+<span class="app-badge app-badge-@(Tone.ToString().ToLowerInvariant())">@Text</span>
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public BadgeTone Tone { get; set; }
+}

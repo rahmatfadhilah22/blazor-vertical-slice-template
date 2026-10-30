@@ -1,0 +1,19 @@
+@* Pengelompok field di dalam FormDialog: judul + grid field sendiri.
+   Rentang penuh kolom form induk, jadi boleh ditulis di antara field lain. *@
+<section class="app-form-section">
+    <h3 class="app-form-section-title">@Title</h3>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p class="app-form-section-description">@Description</p>
+    }
+    <div class="app-form-grid" style="--app-form-columns:@Columns">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public int Columns { get; set; } = 3;
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

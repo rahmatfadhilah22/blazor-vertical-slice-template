@@ -103,18 +103,24 @@ src/BlazorTemplate.Shared/           RCL net10.0, komponen lintas fitur di atas 
   Components/PageHeader.razor           judul halaman + slot aksi
   Components/EmptyState.razor           kondisi kosong / gagal muat
   Components/LanguageSwitch.razor       dropdown pemilih bahasa di header
+  Components/StatusBadge.razor          label status berwarna + BadgeTone.cs
   Components/Button/                    Button.razor (wrapper RadzenButton) + ButtonEnums.cs
   Components/DataGrid/                  DataGrid.razor(+.cs) grid server-side + DataGridLoadArgs.cs
+  Components/Tabs/                      TabView (wrapper RadzenTabs) + TabItem
   Components/Form/                      FormInputBase + FormTextBox/FormTextArea/FormNumeric/
-                                        FormCheckBox/FormSwitch/FormDatePicker/FormDropDown,
-                                        FormField, FieldError, FormDialog, DialogSize, DialogGuard
+                                        FormCheckBox/FormSwitch/FormDatePicker/FormDropDown/
+                                        FormLookup, FormImage, FormField, FormSection, FieldError,
+                                        FormDialog, DialogSize, DialogGuard
   Localization/Localizer.cs             teks UI per bahasa + event Changed
 src/BlazorTemplate.Client/           RCL net10.0, fitur aplikasi
   Models/                               11 entitas + BoolIntConverter + PagedResult
   Services/ApiClient.cs                 satu jalur HTTP: typed result atau ApiException
+  Services/Confirm.cs                   dialog konfirmasi hapus standar
+  Services/Toast.cs                     notifikasi simpan/hapus/gagal standar
   Features/Categories/Pages/            CategoryList — komposisi saja, tanpa Radzen
   Features/Categories/Components/       CategoryGrid, CategoryFormDialog (+ .razor.cs)
   Features/Orders/Pages/OrderList.razor    daftar + OrderForm (`/orders/new`, `/orders/{id}`)
+  Features/Showcase/Pages/ComponentShowcase.razor  halaman `/components`, contoh komponen + data dummy
   Features/<Entity>/Pages|Components/   pola yang sama untuk Products, Suppliers, Shippers,
                                         Customers, Regions, Territories, UsStates,
                                         CustomerDemographics, Employees
@@ -268,6 +274,47 @@ object? saved = await DialogService.OpenAsync<CategoryFormDialog>(title, paramet
 #### Satu model, bukan dua
 
 `CategoryInput` sudah dihapus. `SaveCategoryRequest` di backend berbentuk sama dengan `Category` (`categoryId`, `categoryName`, `description`, `picture`), jadi form memakai `Category` untuk tampilan **dan** body request. `categoryId == 0` berarti insert. Buat model terpisah hanya kalau body request benar-benar berbeda dari respons (mis. ada password atau field yang tidak boleh dibaca balik).
+
+### Komponen UI siap pakai
+
+Semua contoh di bawah tampil langsung di halaman `/components` (menu **Komponen**) dengan data dummy.
+
+| Komponen | Kegunaan |
+|---|---|
+| `TabView` + `TabItem` | Tab di halaman detail / form multi-bagian. |
+| `FormSection` | Mengelompokkan field di dalam `FormDialog` (judul + grid sendiri). |
+| `FormLookup` | Dropdown yang menCari ke API saat dibuka dan diketik. |
+| `FormImage` | Unggah gambar → base64, pratinjau, unduh, hapus. Nilai cocok dengan `byte[]` backend. |
+| `StatusBadge` | Label status berwarna (`BadgeTone.Neutral/Info/Success/Warning/Danger`). |
+| `Confirm.DeleteAsync` | Konfirmasi hapus standar; mengembalikan `true` hanya jika dikonfirmasi. |
+| `Toast.Saved/Deleted/DeleteFailed` | Notifikasi CRUD dengan teks yang sama di semua halaman. |
+
+```razor
+<TabView @bind-SelectedIndex="_tab">
+    <TabItem Text="Profil">...</TabItem>
+    <TabItem Text="Pesanan">...</TabItem>
+</TabView>
+
+<FormSection Title="Alamat" Columns="2">
+    <FormTextBox Label="@L["field.address"]" @bind-Value="_model.Address" />
+</FormSection>
+
+<FormLookup TItem="Customer" TValue="string" Label="@L["entity.customer"]"
+            TextProperty="CompanyName" ValueProperty="CustomerID"
+            @bind-Value="_model.CustomerID" Load="LoadCustomersAsync" />
+
+<FormImage Label="@L["field.picture"]" FullWidth @bind-Value="_model.Picture" />
+```
+
+```csharp
+private async Task<IEnumerable<Customer>> LoadCustomersAsync(string? search, CancellationToken ct)
+    => (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 20, search)).Items;
+
+if (!await Confirm.DeleteAsync(DialogService, L, L.Format("common.deleteRows", ids.Count)))
+    return;
+```
+
+Komponen tab sengaja bernama `TabView`, bukan `Tabs`: `Tabs` adalah nama slot `RenderFragment` milik `RadzenTabs`, sehingga komponen dengan nama itu akan menutupinya di seluruh aplikasi. `FormLookup` membiarkan `Data` bernilai null sampai `LoadData` pertama — menyetel `[]` membuat Radzen tidak pernah memuat data.
 
 ### Multi language
 

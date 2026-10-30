@@ -1,0 +1,67 @@
+@typeparam TItem where TItem : class
+@typeparam TValue
+@inherits FormInputBase<TValue>
+@* Dropdown yang datanya dicari ke server (pelanggan, produk, supplier).
+ *
+ * Data dibiarkan null saat awal: RadzenDropDown memanggil LoadData sendiri pada render
+ * pertama persis ketika Data == null. Menyetel [] membuat dropdown kosong selamanya.
+ * Ketikan pengguna juga masuk ke LoadData lewat args.Filter; jeda 250 ms mencegah
+ * satu request per huruf. Muat awal dan pencarian memakai callback yang sama.
+ *
+ * Pemakaian:
+ *   <FormLookup TItem="Customer" TValue="string" Label="Pelanggan"
+ *               TextProperty="CompanyName" ValueProperty="CustomerID"
+ *               @bind-Value="_model.CustomerID" Load="LoadCustomersAsync" />
+ *@
+<FormDropDown TValue="TValue" Label="@Label" Name="@Name" Error="@Error" Disabled="@Disabled"
+              Value="@Value" ValueChanged="@ValueChanged"
+              Data="@_items" TextProperty="@TextProperty" ValueProperty="@ValueProperty"
+              Placeholder="@Placeholder" Required="@Required" FullWidth="@FullWidth"
+              LoadData="LoadAsync" />
+
+@code {
+    /// <summary>Ambil baris dari API. <c>search</c> null = muat awal.</summary>
+    [Parameter, EditorRequired] public Func<string?, CancellationToken, Task<IEnumerable<TItem>>> Load { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string TextProperty { get; set; } = "";
+    [Parameter, EditorRequired] public string ValueProperty { get; set; } = "";
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    private IEnumerable<object>? _items;
+    private CancellationTokenSource? _cts;
+
+    private async Task LoadAsync(LoadDataArgs args)
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        var cts = _cts = new CancellationTokenSource();
+        try
+        {
+            var search = string.IsNullOrWhiteSpace(args.Filter) ? null : args.Filter;
+            if (search is not null)
+                await Task.Delay(250, cts.Token);
+
+            var rows = await Load(search, cts.Token);
+            // Simpan List<TItem> apa adanya (covariant ke IEnumerable<object>). Jangan
+            // Cast<object>: Radzen membaca ValueProperty lewat tipe elemen runtime.
+            _items = rows.ToList();
+        }
+        catch (OperationCanceledException)
+        {
+            // Ketikan berikutnya sudah menggantikan request ini.
+        }
+        catch (Exception)
+        {
+            // Lookup gagal tidak boleh menjatuhkan halaman form; dropdown tampil kosong.
+            _items = [];
+        }
+    }
+
+    public override void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        base.Dispose();
+    }
+}

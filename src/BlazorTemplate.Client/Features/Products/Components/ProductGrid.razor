@@ -18,9 +18,8 @@
         <RadzenDataGridColumn TItem="Product" Property="Discontinued" Title="@L["field.discontinued"]" Width="140px"
                               TextAlign="TextAlign.Center">
             <Template Context="product">
-                <span class="app-badge @(product.Discontinued ? "app-badge-danger" : "app-badge-success")">
-                    @(product.Discontinued ? L["common.yes"] : L["common.no"])
-                </span>
+                <StatusBadge Text="@(product.Discontinued ? L["common.yes"] : L["common.no"])"
+                             Tone="@(product.Discontinued ? BadgeTone.Danger : BadgeTone.Success)" />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Product" Context="product" Title="@L["common.action"]" Sortable="false"

@@ -48,22 +48,18 @@ public partial class CustomerDemographicGrid : BaseComponent
         if (ids.Count == 0)
             return;
 
-        var confirmed = await DialogService.Confirm(
-            L.Format("common.deleteRows", ids.Count),
-            L["common.confirm"],
-            new ConfirmOptions { OkButtonText = L["common.delete"], CancelButtonText = L["common.cancel"] });
-        if (confirmed is not true)
+        if (!await Confirm.DeleteAsync(DialogService, L, L.Format("common.deleteRows", ids.Count)))
             return;
 
         try
         {
             await Api.DeleteAsync("CustomerDemographics/Delete", ids);
             await ReloadAsync();
-            NotificationService.Notify(NotificationSeverity.Success, L["common.deleted"]);
+            Toast.Deleted(NotificationService, L);
         }
         catch (Exception ex)
         {
-            NotificationService.Notify(NotificationSeverity.Error, L["common.deleteFailed"], ex.Message);
+            Toast.DeleteFailed(NotificationService, L, ex);
         }
     }
 
