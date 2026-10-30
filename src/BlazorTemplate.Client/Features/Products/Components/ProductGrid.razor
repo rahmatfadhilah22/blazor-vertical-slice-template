@@ -9,7 +9,7 @@
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
     <ChildContent>
-        <RadzenDataGridColumn TItem="Product" Property="ProductID" Title="ID" Width="72px" TextAlign="TextAlign.Right" />
+        <RadzenDataGridColumn TItem="Product" Property="ProductID" Title="ID" Width="72px" />
         <RadzenDataGridColumn TItem="Product" Property="ProductName" Title="@L["field.productName"]" />
         <RadzenDataGridColumn TItem="Product" Property="UnitPrice" Title="@L["field.unitPrice"]" Width="120px"
                               TextAlign="TextAlign.Right" FormatString="{0:C2}" FormatProvider="@Formats.Usd" />

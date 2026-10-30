@@ -9,7 +9,7 @@
                 Disabled="@(_grid?.SelectedCount is not > 0)" Click="DeleteSelectedAsync" />
     </Toolbar>
     <ChildContent>
-        <RadzenDataGridColumn TItem="Region" Property="RegionID" Title="@L["field.regionID"]" Width="100px" TextAlign="TextAlign.Right" />
+        <RadzenDataGridColumn TItem="Region" Property="RegionID" Title="@L["field.regionID"]" Width="100px" />
         <RadzenDataGridColumn TItem="Region" Property="RegionDescription" Title="@L["field.regionDescription"]" />
         <RadzenDataGridColumn TItem="Region" Context="region" Title="@L["common.action"]" Sortable="false"
                               Filterable="false" Width="88px" TextAlign="TextAlign.Center">

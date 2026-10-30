@@ -84,6 +84,16 @@ public sealed class Localizer
         ["order.subtitle"] = "Kelola pesanan dan pengiriman",
         ["order.notFound"] = "Pesanan tidak ditemukan. Mungkin sudah dihapus.",
 
+        ["customer.subtitle"] = "Pelanggan dan kontak perusahaan",
+        ["product.subtitle"] = "Katalog produk, harga, dan stok",
+        ["supplier.subtitle"] = "Pemasok dan kontak",
+        ["shipper.subtitle"] = "Jasa pengiriman",
+        ["employee.subtitle"] = "Data karyawan",
+        ["region.subtitle"] = "Wilayah penjualan",
+        ["territory.subtitle"] = "Wilayah jual di dalam region",
+        ["usState.subtitle"] = "Referensi negara bagian",
+        ["customerDemographic.subtitle"] = "Segmentasi pelanggan",
+
         ["entity.customer"] = "Pelanggan",
         ["entity.customers"] = "Pelanggan",
         ["entity.employee"] = "Karyawan",
@@ -228,6 +238,16 @@ public sealed class Localizer
 
         ["order.subtitle"] = "Manage orders and shipping",
         ["order.notFound"] = "Order not found. It may have been deleted.",
+
+        ["customer.subtitle"] = "Customers and company contacts",
+        ["product.subtitle"] = "Product catalog, pricing, and stock",
+        ["supplier.subtitle"] = "Suppliers and contacts",
+        ["shipper.subtitle"] = "Shipping carriers",
+        ["employee.subtitle"] = "Employee directory",
+        ["region.subtitle"] = "Sales regions",
+        ["territory.subtitle"] = "Sales territories within regions",
+        ["usState.subtitle"] = "US state reference",
+        ["customerDemographic.subtitle"] = "Customer segments",
 
         ["entity.customer"] = "Customer",
         ["entity.customers"] = "Customers",
