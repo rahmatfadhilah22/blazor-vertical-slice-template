@@ -69,6 +69,7 @@ public sealed class Localizer
         ["grid.selectRow"] = "Pilih baris",
         ["grid.empty"] = "Belum ada data.",
         ["grid.loadFailed"] = "Gagal memuat data",
+        ["grid.pagingSummary"] = "Halaman {0} dari {1} · {2} data",
 
         ["common.addEntity"] = "Tambah {0}",
         ["common.editEntity"] = "Ubah {0}",
@@ -213,6 +214,7 @@ public sealed class Localizer
         ["grid.selectRow"] = "Select row",
         ["grid.empty"] = "No data yet.",
         ["grid.loadFailed"] = "Failed to load data",
+        ["grid.pagingSummary"] = "Page {0} of {1} · {2} items",
 
         ["common.addEntity"] = "Add {0}",
         ["common.editEntity"] = "Edit {0}",

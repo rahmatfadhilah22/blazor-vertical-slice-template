@@ -15,6 +15,7 @@
         <RadzenDataGridColumn TItem="Order" Property="EmployeeName" Title="@L["entity.employee"]" Width="160px" />
         <RadzenDataGridColumn TItem="Order" Property="OrderDate" Title="@L["field.orderDate"]" Width="120px" FormatString="{0:yyyy-MM-dd}" />
         <RadzenDataGridColumn TItem="Order" Property="ShipperName" Title="@L["entity.shipper"]" Width="150px" />
-        <RadzenDataGridColumn TItem="Order" Property="Freight" Title="@L["field.freight"]" Width="110px" TextAlign="TextAlign.Right" FormatString="{0:N2}" />
+        <RadzenDataGridColumn TItem="Order" Property="Freight" Title="@L["field.freight"]" Width="110px" TextAlign="TextAlign.Right"
+                              FormatString="{0:C2}" FormatProvider="@Formats.Usd" />
     </ChildContent>
 </DataGrid>

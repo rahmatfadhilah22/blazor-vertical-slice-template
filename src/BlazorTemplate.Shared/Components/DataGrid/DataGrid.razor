@@ -37,6 +37,7 @@
                 LoadData="LoadDataInternal" AllowPaging IsLoading="_isLoading"
                 @bind-PageSize="_pageSize" PageSizeOptions="@PageSizeOptions"
                 PagerHorizontalAlign="HorizontalAlign.Center"
+                ShowPagingSummary PagingSummaryFormat="@L["grid.pagingSummary"]"
                 AllowColumnResize AllowColumnReorder RowClick="RowClickInternal"
                 Style="width:100%">
     <Columns>

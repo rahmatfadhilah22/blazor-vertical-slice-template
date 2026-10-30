@@ -15,9 +15,11 @@ public partial class OrderForm : FormDialogBase<Order>
     [Inject] public NavigationManager Nav { get; set; } = default!;
 
     private Order _model = new();
-    private List<Customer> _customers = [];
-    private List<Employee> _employees = [];
-    private List<Shipper> _shippers = [];
+    // Null = biarkan RadzenDropDown memicu LoadData sendiri saat pertama dirender.
+    // List kosong ([]) tidak memicu apa pun: dropdown tampil kosong saat diklik.
+    private List<Customer>? _customers;
+    private List<Employee>? _employees;
+    private List<Shipper>? _shippers;
     private bool _loading = true;
     private bool _notFound;
     private bool _lookupsLoaded;
@@ -38,18 +40,28 @@ public partial class OrderForm : FormDialogBase<Order>
 
         try
         {
-            if (!_lookupsLoaded)
+            var modelTask = Id is null
+                ? Task.FromResult(DraftStore.GetOrCreate<Order>())
+                : Api.GetAsync<Order>($"Orders/GetRow/{Id}");
+
+            // Halaman baru tidak punya nilai terpilih, jadi daftar opsi tidak perlu dimuat
+            // dulu: dropdown memuatnya sendiri lewat LoadXxxAsync saat dibuka. Untuk edit,
+            // daftar opsi dan model diambil bersamaan, bukan berurutan.
+            if (Id is not null && !_lookupsLoaded)
             {
-                // Daftar awal untuk menampilkan nilai terpilih; pencarian dropdown memakai LoadXxxAsync.
-                _customers = (await Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 100)).Items.ToList();
-                _employees = (await Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 100)).Items.ToList();
-                _shippers = (await Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 100)).Items.ToList();
+                var customers = Api.GetPagedAsync<Customer>("Customers/GetRows", 1, 100);
+                var employees = Api.GetPagedAsync<Employee>("Employees/GetRows", 1, 100);
+                var shippers = Api.GetPagedAsync<Shipper>("Shippers/GetRows", 1, 100);
+
+                await Task.WhenAll(modelTask, customers, employees, shippers);
+
+                _customers = (await customers).Items.ToList();
+                _employees = (await employees).Items.ToList();
+                _shippers = (await shippers).Items.ToList();
                 _lookupsLoaded = true;
             }
 
-            _model = Id is null
-                ? DraftStore.GetOrCreate<Order>()
-                : await Api.GetAsync<Order>($"Orders/GetRow/{Id}");
+            _model = await modelTask;
         }
         catch (ApiException ex) when (ex.StatusCode == 404)
         {

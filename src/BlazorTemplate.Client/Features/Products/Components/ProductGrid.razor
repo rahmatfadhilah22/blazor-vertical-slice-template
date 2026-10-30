@@ -12,10 +12,11 @@
         <RadzenDataGridColumn TItem="Product" Property="ProductID" Title="ID" Width="72px" TextAlign="TextAlign.Right" />
         <RadzenDataGridColumn TItem="Product" Property="ProductName" Title="@L["field.productName"]" />
         <RadzenDataGridColumn TItem="Product" Property="UnitPrice" Title="@L["field.unitPrice"]" Width="120px"
-                              TextAlign="TextAlign.Right" FormatString="{0:N2}" />
+                              TextAlign="TextAlign.Right" FormatString="{0:C2}" FormatProvider="@Formats.Usd" />
         <RadzenDataGridColumn TItem="Product" Property="UnitsInStock" Title="@L["field.unitsInStock"]" Width="130px"
                               TextAlign="TextAlign.Right" FormatString="{0:N0}" />
-        <RadzenDataGridColumn TItem="Product" Property="Discontinued" Title="@L["field.discontinued"]" Width="140px">
+        <RadzenDataGridColumn TItem="Product" Property="Discontinued" Title="@L["field.discontinued"]" Width="140px"
+                              TextAlign="TextAlign.Center">
             <Template Context="product">
                 <span class="app-badge @(product.Discontinued ? "app-badge-danger" : "app-badge-success")">
                     @(product.Discontinued ? L["common.yes"] : L["common.no"])
